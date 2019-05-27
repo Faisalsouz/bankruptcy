@@ -1,7 +1,24 @@
 # Bankruptcy prediciton
 
-Information about the Dataset:
-https://archive.ics.uci.edu/ml/datasets/Polish+companies+bankruptcy+data
+## Procect structure
+
+<pre>
+.
+|-- src
+|-- test
+|-- model (local only)
+|-- data
+    |-- PolishData
+    |-- processed
+    |-- raw
+|-- notebook
+    |-- eda (Exploratory Data Analysis)
+    |-- poc (Proof-of-Concept)
+    |-- modeling
+    |-- evaluation
+</pre>
+
+
 
 ## Installation instructions
 ## Start from scratch

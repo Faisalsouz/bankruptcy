@@ -9,3 +9,4 @@
    - ipython
    - pandas
    - tensorflow
+   - nltk
