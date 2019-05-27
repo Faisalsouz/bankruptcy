@@ -61,3 +61,6 @@ target/
 
 # Notebook Checkpoints
 .ipynb_checkpoints/
+
+# ignore local model checkpoints that are stored in the model folder
+model/
