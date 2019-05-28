@@ -5,7 +5,6 @@
 <pre>
 .
 |-- src
-|-- test
 |-- model (local only)
 |-- data
     |-- PolishData
