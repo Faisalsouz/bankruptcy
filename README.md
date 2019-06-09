@@ -1,6 +1,6 @@
 # Bankruptcy prediciton
 
-## Procect structure
+## Project structure
 
 <pre>
 .
