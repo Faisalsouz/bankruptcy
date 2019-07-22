@@ -45,3 +45,20 @@ If you just need to update your environment run the following command:
 ```
 conda env update -f install.yml
 ```
+
+
+## Running the Data Extraction script 
+In case you are running the extract_data.py script, please make sure to provide at least the (full!) path to the source folder containing the data (you can optionally set the destination folder as a third argument). Don't use relative paths like "../Data". An example would be:
+```
+python3 extract_data.py /Users/Anna/Documents/Data/ /Users/Anna/Documents/ExtractedData/
+```
+The source folder must match the following structure (which it should automatically):
+
+<pre>
+|-- Data
+    |-- Company X's CIK number
+        |-- Company's SEC number
+                |-- 10-K
+                        |-- Actual text file of format: SEC access number - yy - xxx.txt
+                |-- 10-Q
+</pre>
