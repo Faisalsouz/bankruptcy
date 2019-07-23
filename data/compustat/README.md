@@ -1,6 +1,6 @@
 ## Compustat Raw Data
 
-### chunk_1.rtf
+### 1. chunk_1.rtf
 The file includes 175019 rows of Compustat raw data for the columns:
 * gvkey
 * datadate
@@ -11,7 +11,7 @@ The file includes 175019 rows of Compustat raw data for the columns:
 * conm
 
 
-### chunk_2.rtf
+### 2. chunk_2.rtf
 The file includes the same 175019 rows of Compustat raw data, but for the following columns:
 * tic
 * cusip
@@ -25,5 +25,5 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 * costat
 
 
-### raw_data.txt
+### 3. raw_data.txt
 This is the parent file of the other two.
