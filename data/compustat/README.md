@@ -1,7 +1,7 @@
 ## Compustat Raw Data
 
 ### 1. chunk_1.rtf
-The file includes 175019 rows of Compustat raw data for the columns:
+The file includes 175019 rows of Compustat raw data of 'International and North America companies' for the columns:
 * gvkey
 * datadate
 * fyear
