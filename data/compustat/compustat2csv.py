@@ -68,5 +68,26 @@ data_clean = pd.concat([data1_clean.reset_index(drop=True), data2_clean.\
 # with the only reliable unique code
 data = data_clean.groupby(['Compustat Code']).max().reset_index()
 
+
+# ----------------------------------------------------------------------
+# Writing
+# ----------------------------------------------------------------------
 # write dataframe into a csv file
 data.to_csv('compustat.csv')
+
+# make a new dataframe of healthy companies
+healthy = data[data['isBankrupt'] == 0].reset_index(drop=True)
+# drop the 'Bankruptcy Date' and 'isBankrupt' columns
+healthy = healthy.drop(['Bankruptcy Date', 'isBankrupt'], axis=1)
+# write it into a csv file
+healthy.to_csv('list_healthy.csv')
+print('\nWe have a list of', len(healthy), 'healthy companies')
+
+
+# make a new dataframe of bankrupt companies
+bankrupt = data[data['isBankrupt'] == 1].reset_index(drop=True)
+# drop the 'isBankrupt' column
+bankrupt = bankrupt.drop(['isBankrupt'], axis=1)
+# write it into a csv file
+bankrupt.to_csv('list_bankrupt.csv')
+print('\nAnd another list of', len(bankrupt), 'bankrupt companies.')
