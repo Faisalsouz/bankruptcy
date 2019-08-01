@@ -1,7 +1,7 @@
-## Compustat Raw Data
+## Compustat Folder Contents
 
 ### 1. chunk_1.rtf
-The file includes 175019 rows of Compustat raw data of 'International and North America companies' for the columns:
+The file includes 175019 rows of Compustat raw data of 'International and North America companies' for this 7 columns:
 
 * **gvkey**
 
@@ -13,8 +13,8 @@ The file includes 175019 rows of Compustat raw data of 'International and North 
      
 * **fyear**
 
-    Financial year
-
+    The fiscal year that the company is in at the time of _datadate_
+    
 * **conml**
     
     Company legal name
@@ -46,18 +46,52 @@ The file includes 175019 rows of Compustat raw data of 'International and North 
      
 * **conm**
 
+    Company name
+
 
 ### 2. chunk_2.rtf
-The file includes the same 175019 rows of Compustat raw data, but for the following columns:
+The file includes the same 175019 rows of Compustat raw data, but for the following 10 columns:
+
 * **tic**
+
+    Issue trading ticker (TICI): the stock symbol or simply the abbreviation used to uniquely identify the company.
+
 * **cusip**
+
+    The 9-character alphanumeric CUSIP code identifies any North American security for the purposes of facilitating clearing and settlement of trades. The CUSIP distribution system is owned by the American Bankers Association and is operated by Standard & Poor's. The CUSIP Service Bureau acts as the National numbering agency (NNA) for North America, and the CUSIP serves as the National Securities Identification Number for products issued from both the United States and Canada.
+    For working with financial database we need CUSIP.
+
 * **cik**
+
+    The Central Index Key or CIK is a 10-digit number used on the Securities and Exchange Commission's computer systems to identify corporations and individuals who have filed disclosure with the SEC.
+    The CIK can be used to search for company or fund filings on EDGAR, the Electronic Data-Gathering, Analysis, and Retrieval system of submissions by companies and others who are required by law to file forms with the U.S. Securities and Exchange Commission.
+
 * **exchg**
+
+    Stock exchange: the stock market that lists and trades the company's shares.
+    
+    See [Compustat Stock exchange Codes](https://uvalibraryfeb.files.wordpress.com/2016/02/stock-exchange-codes-compustat.pdf).
+
 * **consol**
+
+    w
+
 * **indfmt**
+
+    w
+
 * **datafmt**
+
+    w
+
 * **popsrc**
+
+    w
+
 * **curcd**
+
+    w
+
 * **costat**
 
 
