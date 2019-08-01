@@ -74,7 +74,7 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
 * **consol**
 
-    w
+    The variable that indicates the level of consolidation. That is
 
 * **indfmt**
 
