@@ -70,7 +70,7 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
     Stock exchange: the stock market that lists and trades the company's shares.
     
-    See [Compustat Stock exchange Codes](https://uvalibraryfeb.files.wordpress.com/2016/02/stock-exchange-codes-compustat.pdf).
+    See [Compustat Stock Exchange Codes](https://uvalibraryfeb.files.wordpress.com/2016/02/stock-exchange-codes-compustat.pdf).
 
 * **consol**
 
