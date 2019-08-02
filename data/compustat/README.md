@@ -1,5 +1,8 @@
 ## Compustat Folder Contents
 
+### 0. README.md
+Read me! :stuck_out_tongue:
+
 ### 1. chunk_1.rtf
 The file includes 175019 rows of Compustat raw data of 'International and North America companies' for this 7 columns:
 
@@ -120,3 +123,18 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
 ### 3. raw_data.txt
 This is the parent file of the first two.
+
+
+### 4. compustat2csv.[py/ipynb]
+Code for making those csv files out of the raw data.
+The notebook version, which delivers a more visually comprehensible version of the code, is available only on _notebook_ branch.
+
+
+### 5. compustatcsv
+This csv file is a clean version of Compustat data, including following columns:
+    * **Compustat Code** i.e. gvkey
+    * **Company Name** It is the legal name.
+    * **Bankruptcy Date**
+    * **Ticker**
+    * **CIK**
+    * **isBankrupt**
