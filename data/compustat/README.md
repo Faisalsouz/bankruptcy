@@ -97,15 +97,21 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 * **datafmt**
 
     Data Format code, that indicates how the data is collected and presented, with Standardized (STD) being the common and useful type.
-    STD annual rows are unrestated and quarterly rows are restated. SUMM_STD annual rows come from the summary tables in an annual report and will contain any restatements. Companies typically include up to 10 previous years in these summary tables, and so there will typically be up to 10 years of SUMM_STD rows, after which they are dropped from the database. The STD (as initially reported / unrestated) rows remain permanently. Unrestated quarterly data can be found in a separate product, named "Unrestated Quarterly".
+    * STD annual rows are unrestated and quarterly rows are restated.
+    * SUMM_STD annual rows come from the summary tables in an annual report and will contain any restatements. Companies typically include up to 10 previous years in these summary tables, and so there will typically be up to 10 years of SUMM_STD rows, after which they are dropped from the database. The STD (as initially reported / unrestated) rows remain permanently. Unrestated quarterly data can be found in a separate product, named "Unrestated Quarterly".
+    * PRE_AMENDS: Standardized data collected from the latest annual filing
+    * PRE_AMENDSS: Standardized summary data collected prior to company amendment 
 
 * **popsrc**
 
-    w
+    Population Source: This item indicates the geographical population source of the data.
+    * D: Domestic (North America: U.S. and Canadian companies)
+    * I = International (non-U.S. and non-Canadian companies)
+    So all we have for this column is surely D.
 
 * **curcd**
 
-    w
+    It identifies the reporting currency for a company at each time period. In this column we mainly have USD (US dollar) and a few CAD (Canadian dollar).
 
 * **costat**
 
