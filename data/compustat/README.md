@@ -122,7 +122,7 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
 
 ### 3. raw_data.txt
-This is the parent file of the first two.
+This is the parent file of the previous two.
 
 
 ### 4. compustat2csv.[py,ipynb]
@@ -135,9 +135,9 @@ This csv file is a clean version of Compustat data, including following columns:
    * **Identifier**: gvkey
    * **Company**: comnl, the legal name of company
    * **Data Deletion Date**: dldte
+   * **isBankrupt**: This is a column added to the data to, based on the _dlrsn_ content, explicitly shows whether the company went bankrupt (1) or not (0).
    * **Ticker**: tic
    * **CIK**: cik
-   * **isBankrupt**: This is a column added to the data to, based on the _dlrsn_ content, explicitly shows whether the company went bankrupt (1) or not (0).
 
 
 ### 6. list_bankrupt.csv
