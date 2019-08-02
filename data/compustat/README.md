@@ -74,7 +74,17 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
 * **consol**
 
-    The variable that indicates the level of consolidation. That is
+     The variable that indicates the level of consolidation. Here, I guess, it means the level of aggregation of financial statements. Although, we only have code C for this column, so it might be the case that we don't need to worry much about this column. Here are the codes for 'consol' column in Compustat:
+     
+    | CONSOL  | Meaning                   | Company Population                        |
+    | ------- | ------------------------- | ----------------------------------------- |
+    | C       | Consolidated              | International and North America companies |
+    | I       | Issue-Level Fundamentals  | International companies                   |
+    | N       | Non-Consolidated          | International companies                   |
+    | P       | Pre-FASB                  | North America companies                   |
+    | D       | Pre-Divestiture           | North America companies                   |
+    | E       | Post-Divestiture          | North America companies                   |
+    | R       | Pro-Forma                 | North America companies                   |    
 
 * **indfmt**
 
