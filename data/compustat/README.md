@@ -88,11 +88,16 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
 * **indfmt**
 
-    w
+    Industry Format: Indicates whether a company reports in Financial Services or Industrial Format. This must be checked when using the query form on the WRDS website in order to retrieve any financial services firms (e.g. banks).
+    
+     _indfmt_ codes:
+     * FS: Financial Services (includes banks, insurance companies, broker/dealers, real estate and other financial services)
+     * INDL: Industrial (includes companies reporting manufacturing, retail, construction and other commercial operations other than financial services)
 
 * **datafmt**
 
-    w
+    Data Format code, that indicates how the data is collected and presented, with Standardized (STD) being the common and useful type.
+    STD annual rows are unrestated and quarterly rows are restated. SUMM_STD annual rows come from the summary tables in an annual report and will contain any restatements. Companies typically include up to 10 previous years in these summary tables, and so there will typically be up to 10 years of SUMM_STD rows, after which they are dropped from the database. The STD (as initially reported / unrestated) rows remain permanently. Unrestated quarterly data can be found in a separate product, named "Unrestated Quarterly".
 
 * **popsrc**
 
