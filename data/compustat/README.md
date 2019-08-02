@@ -130,7 +130,7 @@ Code for making those csv files out of the raw data.
 The notebook version, which delivers a more visually comprehensible version of the code, is available only on _notebook_ branch.
 
 
-### 5. compustatcsv
+### 5. compustat.csv
 This csv file is a clean version of Compustat data, including following columns:
    * **Identifier**: gvkey
    * **Company**: comnl, the legal name of company
