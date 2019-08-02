@@ -1,7 +1,7 @@
 ## Compustat Folder Contents
 
 ### 0. README.md
-Read me! :stuck_out_tongue:
+Just Read me! :stuck_out_tongue:
 
 ### 1. chunk_1.rtf
 The file includes 175019 rows of Compustat raw data of 'International and North America companies' for this 7 columns:
@@ -132,16 +132,17 @@ The notebook version, which delivers a more visually comprehensible version of t
 
 ### 5. compustatcsv
 This csv file is a clean version of Compustat data, including following columns:
-   * **Compustat Code**: gvkey
-   * **Company Name**: It is the legal name.
-   * **Bankruptcy Date**
-   * **Ticker**
-   * **CIK**
-   * **isBankrupt**: This is a column added to the data to, based on the _dlrsn_ content, explicitly says whether the company went bankrupt (1) or not (0).
+   * **Identifier**: gvkey
+   * **Company**: comnl, the legal name of company
+   * **Data Deletion Date**: dldte
+   * **Ticker**: tic
+   * **CIK**: cik
+   * **isBankrupt**: This is a column added to the data to, based on the _dlrsn_ content, explicitly shows whether the company went bankrupt (1) or not (0).
 
 
 ### 6. list_bankrupt.csv
-
+A child of _compustat.csv_, including the data of its 112 bankrupt companies. 
 
 
 ### 7. list_healthy.csv
+A child of _compustat.csv_, including the data of its 20783 healthy companies. 
