@@ -137,7 +137,7 @@ This csv file is a clean version of Compustat data, including following columns:
    * **Bankruptcy Date**
    * **Ticker**
    * **CIK**
-   * **isBankrupt**: This is a column added to the data to, based on the _dlrsn_ content, explicitly says whether the company went bankrupt or not.
+   * **isBankrupt**: This is a column added to the data to, based on the _dlrsn_ content, explicitly says whether the company went bankrupt (1) or not (0).
 
 
 ### 6. list_bankrupt.csv
