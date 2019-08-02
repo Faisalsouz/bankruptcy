@@ -141,8 +141,8 @@ This csv file is a clean version of Compustat data, including following columns:
 
 
 ### 6. list_bankrupt.csv
-A child of _compustat.csv_, including the data of its 112 bankrupt companies. 
+A child of _compustat.csv_, including the data of its **112 bankrupt companies.**
 
 
 ### 7. list_healthy.csv
-A child of _compustat.csv_, including the data of its 20783 healthy companies. 
+A child of _compustat.csv_, including the data of its **20783 healthy companies.**
