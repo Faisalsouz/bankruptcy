@@ -115,6 +115,8 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
 * **costat**
 
+    Postal code character: the postal code or zip code of the company’s corporate headquarters or home office. 
+
 
 ### 3. raw_data.txt
 This is the parent file of the first two.
