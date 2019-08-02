@@ -26,15 +26,16 @@ data1 = data1.drop(['Unnamed: 8'], axis=1)
 data1.rename(columns={'Unnamed: 4':'lia'}, inplace=True)
 
 # make another copy of the data for cleaning, and
-# drop 5 un-immediately-necessary columns
-data1_clean = data1.drop(['datadate', 'fyear', 'conm', 'lia', 'dlrsn'], axis=1)
+# drop 4 un-immediately-necessary columns
+data1_clean = data1.drop(['datadate', 'fyear', 'lia', 'conm'], axis=1)
 
 # add a column to explicitly shows the bankruptcy status
-data1_clean['isBankrupt'] = np.where(data1_clean['dldte']=='.', 0, 1)
+data1_clean['isBankrupt'] = np.where(data1_clean['dlrsn']==2, 1, 0)
 
 # make the headers comprehensible
-data1_clean.columns = ['Compustat Code', 'Company Name',
-                       'Bankruptcy Date', 'isBankrupt']
+data1_clean.columns = ['Identifier', 'Company', 'Data Deletion Date',
+                       'Deletion Reason', 'isBankrupt']
+
 
 
 # ----------------------------------------------------------------------
@@ -66,7 +67,7 @@ data_clean = pd.concat([data1_clean.reset_index(drop=True), data2_clean.\
 
 # make the final copy, and collapse the repetitive rows,
 # with the only reliable unique code
-data = data_clean.groupby(['Compustat Code']).max().reset_index()
+data = data_clean.groupby(['Identifier']).max().reset_index()
 
 
 # ----------------------------------------------------------------------
@@ -77,11 +78,11 @@ data.to_csv('compustat.csv')
 
 # make a new dataframe of healthy companies
 healthy = data[data['isBankrupt'] == 0].reset_index(drop=True)
-# drop the 'Bankruptcy Date' and 'isBankrupt' columns
-healthy = healthy.drop(['Bankruptcy Date', 'isBankrupt'], axis=1)
+# drop the 'isBankrupt' columns
+healthy = healthy.drop(['isBankrupt'], axis=1)
 # write it into a csv file
 healthy.to_csv('list_healthy.csv')
-print('\nWe have a list of', len(healthy), 'healthy companies')
+print('\nNow, we have a list of', len(healthy), 'healthy companies,')
 
 
 # make a new dataframe of bankrupt companies
@@ -90,4 +91,4 @@ bankrupt = data[data['isBankrupt'] == 1].reset_index(drop=True)
 bankrupt = bankrupt.drop(['isBankrupt'], axis=1)
 # write it into a csv file
 bankrupt.to_csv('list_bankrupt.csv')
-print('\nAnd another list of', len(bankrupt), 'bankrupt companies.')
+print('and another list of', len(bankrupt), 'bankrupt companies.')
