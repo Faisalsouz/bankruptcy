@@ -37,9 +37,9 @@ The file includes 175019 rows of Compustat raw data of 'International and North 
      * 04: Reverse acquisition (1983 forward)
      * 05: No longer fits original format (1978 forward)
      * 06: Leveraged buyout (1982 forward)
-     * 07: Other (no longer files with SEC among other possible reasons), but pricing continues
+     * 07: Other (no longer files with 'The Securities and Exchange Commission' among other possible reasons), but pricing continues
      * 09: Now a private company
-     * 10: Other (no longer files with SEC among other reasons)
+     * 10: Other (no longer files with 'The Securities and Exchange Commission' among other reasons)
      * 11: Agency governing settlement of securities' trading inactivated the issue's Local Settlement Code because the issue matured, 
         expired or was called. No successor settlement code was established.
      * 12: Agency governing settlement of securities' trading inactivated the issue's Local Settlement Code. A successor settlement 
@@ -66,7 +66,7 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 
 * **cik**
 
-    The Central Index Key or CIK is a 10-digit number used on the Securities and Exchange Commission's computer systems to identify corporations and individuals who have filed disclosure with the SEC.
+    The Central Index Key or CIK is a 10-digit number used on the Securities and Exchange Commission's computer systems to identify corporations and individuals who have filed disclosure with the SEC (The Securities and Exchange Commission: a U.S. government agency that oversees securities transactions, activities of financial professionals and mutual fund trading to prevent fraud and intentional deception).
     The CIK can be used to search for company or fund filings on EDGAR, the Electronic Data-Gathering, Analysis, and Retrieval system of submissions by companies and others who are required by law to file forms with the U.S. Securities and Exchange Commission.
 
 * **exchg**
