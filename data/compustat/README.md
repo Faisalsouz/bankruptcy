@@ -1,7 +1,7 @@
 ## Compustat Folder Contents
 
 ### 0. README.md
-Just Read me! :stuck_out_tongue:
+Just Read me!
 
 ### 1. chunk_1.rtf
 The file includes 175019 rows of Compustat raw data of 'International and North America companies' for this 7 columns:
