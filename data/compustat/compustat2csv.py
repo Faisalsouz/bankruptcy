@@ -51,11 +51,11 @@ data2 = data2_raw.drop([0], axis=0).reset_index(drop=True)
 
 # make another copy of the data for cleaning, and
 # drop 7 un-immediately-necessary columns
-data2_clean = data2.drop(['cusip', 'exchg', 'consol', 'indfmt',
+data2_clean = data2.drop(['exchg', 'consol', 'indfmt',
                           'datafmt', 'popsrc', 'costat', 'curcd'], axis=1)
 
 # make the headers comprehensible
-data2_clean.columns = ['Ticker', 'CIK']
+data2_clean.columns = ['Ticker', 'CUSIP', 'CIK']
 
 
 # ----------------------------------------------------------------------
