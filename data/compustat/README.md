@@ -138,6 +138,7 @@ This csv file is a clean version of Compustat data, including following columns:
    * **Deletion Reason**: dlrsn
    * **isBankrupt**: This is a column added to the data to, based on the _dlrsn_ content, explicitly shows whether the company went bankrupt (1) or not (0).
    * **Ticker**: tic
+   * **CUSIP**: cusip
    * **CIK**: cik
 
 
