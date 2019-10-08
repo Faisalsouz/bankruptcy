@@ -8,6 +8,8 @@
 |-- model (local only)
 |-- data
     |-- PolishData
+    |-- Compustat
+    |-- Eikon
     |-- processed
     |-- raw
 |-- notebook
