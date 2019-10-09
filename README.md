@@ -7,9 +7,9 @@
 |-- src
 |-- model (local only)
 |-- data
-    |-- PolishData
     |-- Compustat
     |-- Eikon
+    |-- PolishData
     |-- processed
     |-- raw
 |-- notebook
