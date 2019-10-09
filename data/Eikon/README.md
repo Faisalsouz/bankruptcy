@@ -18,13 +18,40 @@ The folder contains the following:
 <br>
 
 ### 1-2. GetData.[py,ipynb]
-The file includes 175019 rows of Compustat raw data of 'International and North America companies' for this 7 columns:
+The code for downlinad historical timeseries and financial data for the companies in the two _bankrupt_ and _healthy_ lists from Thomson Reuters Eikon.
+<br>
 
 ### 3. README.md
 Just Read me!
-
+<br>
 
 ### 4-5. csvProcessing.[py,ipynb]
+The code for reading csv files from *convertedCSVfiles* folder and merge them into two final csv files of bankrupt and healthy companies, including following columns:
+   * **Identifier**: gvkey
+   * **Company**: comnl, the legal name of company
+   * **Data Deletion Date**: dldte
+   * **Deletion Reason**: dlrsn
+   * **Ticker**: tic
+   * **CUSIP**: cusip
+   * **CIK**: cik
+   * **ISIN**: ISIN (International Securities Identification Number) code 
+   * **ISINc**: Conflict-check between the two ways of retrieving ISIN code; that is, by converting Ticker and by converting CUSIP
+      * 0: No conflict! Both ways resulted in the same value; either a valid code or NAN
+      * 1: Conflict! One conversion resulted in a NAN and we obtained a valid code from the other.
+      * 3: Serious conflict! Both conversion returned a valid ISIN code but the codes are different.
+   * **RIC**: Eikon's RIC (Reuters Instrument Code)
+   * **RICc**: Conflict-check between the two ways of retrieving RIC; that is, by converting Ticker and by converting CUSIP
+      * 0: No conflict! Both ways resulted in the same value; either a valid code or NAN
+      * 1: Conflict! One conversion resulted in a NAN and we obtained a valid code from the other.
+      * 3: Serious conflict! Both conversion returned a valid RIC but the codes are different.
+<br>
+
 ### 6. eikon.cfg
+something
+<br>
+
 ### 7. final_bankrupt_list.csv
+something
+<br>
+
 ### 8. final_healthy_list.csv
