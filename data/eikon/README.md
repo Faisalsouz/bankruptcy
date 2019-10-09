@@ -1,5 +1,9 @@
 ## Eikon Folder Contents
 
+### 0. convertedCSVfiles
+
+The folder contains the following:
+
 * **Bankrupt**
 
   This folder contains 4 csv files of converting Tickers and CUSIPs from Compustat to ISINs and RICs from Eikon, for 112 bankrupt companies.
