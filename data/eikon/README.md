@@ -10,7 +10,7 @@ The folder contains the following:
 
 * **Healthy**
 
-  This folder contains 24 csv files of converting Tickers and CUSIPs from Compustat to ISINs and RICs from Eikon, for 20783 healthy companies. For each conversion, since Eikon does not accept large-batch conversion of identifier, we needed to divide the list to smaller chunks. Though it was possible to work with 10,000-company chunks, but it seemed like with the bigger sizes of the batchs, the conversion results have more mysterious missing rows. 
+  This folder contains 24 csv files of converting Tickers and CUSIPs from Compustat to ISINs and RICs from Eikon, for 20783 healthy companies. For each conversion, since Eikon does not accept large-batch conversion of identifiers, we needed to divide the list to smaller chunks. Though it was possible to work with 10,000-company chunks, but it seemed like with the bigger sizes of batchs, the conversions results have more mysterious missing rows. 
   
 * **ConvertSymbol.ipynb**
 
