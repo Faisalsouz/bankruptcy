@@ -14,9 +14,6 @@ The folder contains the following:
   
 * **ConvertSymbol.ipynb**
 
-### 0. convertedCSVfiles
-Just Read me!
-
 ### 1. GetData.ipynb
 The file includes 175019 rows of Compustat raw data of 'International and North America companies' for this 7 columns:
 
@@ -24,8 +21,7 @@ The file includes 175019 rows of Compustat raw data of 'International and North 
 Just Read me!
 
 
-### 3. csvProcessing.ipynb
-### 4. csvProcessing.py
+### 3-4. csvProcessing.ipynb/py
 ### 5. eikon.cfg
 ### 6. final_bankrupt_list.csv
 ### 7. final_healthy_list.csv
