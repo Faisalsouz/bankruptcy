@@ -125,12 +125,12 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 This is the parent file of the previous two.
 
 
-### 4. compustat2csv.[py,ipynb]
-Code for making those csv files out of the raw data.
+### 4-5. compustat2csv.[py,ipynb]
+Code for creating those csv files out of the raw data.
 The notebook version, which delivers a more visually comprehensible version of the code, is available only on _notebook_ branch.
 
 
-### 5. compustat.csv
+### 6. compustat.csv
 This csv file is a clean version of Compustat data, including following columns:
    * **Identifier**: gvkey
    * **Company**: comnl, the legal name of company
@@ -142,9 +142,9 @@ This csv file is a clean version of Compustat data, including following columns:
    * **CIK**: cik
 
 
-### 6. list_bankrupt.csv
+### 7. list_bankrupt.csv
 A child of _compustat.csv_, including the data of its **112 bankrupt companies.**
 
 
-### 7. list_healthy.csv
+### 8. list_healthy.csv
 A child of _compustat.csv_, including the data of its **20783 healthy companies.**
