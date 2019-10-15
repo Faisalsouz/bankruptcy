@@ -1,6 +1,11 @@
 ## Eikon Folder Contents
 
-### 0. convertedCSVfiles
+### 0. Lists
+
+The folder contains 4 pickled text files including the lists of ISINs and RICs for bankupt and healthy companies.
+
+
+### 1. convertedCSVfiles
 
 The folder contains the following:
 
@@ -17,23 +22,23 @@ The folder contains the following:
   The code for converting symbols using Eikon methods.
 <br>
 
-### 1-2. GetData.[py,ipynb]
+### 2-3. GetData.[py,ipynb]
 The code for downloading historical timeseries and financial data, from Thomson Reuters Eikon, for the companies listed in the two final _bankrupt_ and _healthy_ files.
 <br>
 
-### 3. README.md
+### 4. README.md
 Just Read me!
 <br>
 
-### 4-5. csvProcessing.[py,ipynb]
+### 5-6. csvProcessing.[py,ipynb]
 The code for reading csv files from *convertedCSVfiles* folder and merge them into two final csv files of bankrupt and healthy companies, ready to be used for downloading financial data from Eikon.
 <br>
 
-### 6. eikon.cfg
+### 7. eikon.cfg
 Administrative stuff; the file is required to be read by the code to permit the user getting data from Eikon API.
 <br>
 
-### 7. final_bankrupt_list.csv
+### 8. final_bankrupt_list.csv
 A list of 112 bankrupt companies, based in North America, including the following columns:
    * **Identifier**: gvkey
    * **Company**: comnl, the legal name of company
@@ -54,7 +59,7 @@ A list of 112 bankrupt companies, based in North America, including the followin
       * 3: Serious conflict! Both conversion returned a valid RIC but the codes are different.
 <br>
 
-### 8. final_healthy_list.csv
+### 9. final_healthy_list.csv
 A list of, supposedly, 20783 healthy companies, based in North America, including the columns listed below; however, the number of rows exceeded 21,000, for some wierd reasons that I'm not aware of yet, but I have to and will find about.
    * **Identifier**: gvkey
    * **Company**: comnl, the legal name of company
