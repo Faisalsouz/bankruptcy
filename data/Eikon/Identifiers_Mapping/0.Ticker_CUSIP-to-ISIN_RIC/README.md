@@ -1,4 +1,5 @@
-### 8. final_bankrupt_list.csv
+## 0.Ticker_CUSIP-to-ISIN_RIC Folder Contents
+### 8. 0.bankrupt_list.csv
 A list of 112 bankrupt companies, based in North America, including the following columns:
    * **Identifier**: gvkey
    * **Company**: comnl, the legal name of company
@@ -19,7 +20,7 @@ A list of 112 bankrupt companies, based in North America, including the followin
       * 3: Serious conflict! Both conversion returned a valid RIC but the codes are different.
 <br>
 
-### 9. final_healthy_list.csv
+### 9. 0.healthy_list.csv
 A list of, supposedly, 20783 healthy companies, based in North America, including the columns listed below; however, the number of rows exceeded 21,000, for some wierd reasons that I'm not aware of yet, but I have to and will find about.
    * **Identifier**: gvkey
    * **Company**: comnl, the legal name of company
