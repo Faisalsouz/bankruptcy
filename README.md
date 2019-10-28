@@ -64,3 +64,4 @@ The source folder must match the following structure (which it should automatica
                         |-- Actual text file of format: SEC access number - yy - xxx.txt
                 |-- 10-Q
 </pre>
+ok
