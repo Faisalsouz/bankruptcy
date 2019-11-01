@@ -68,5 +68,4 @@ A list of, supposedly, 20783 healthy companies, based in North America, includin
 Just Read me!
 
 ### 5. csvProcessing.ipynb
-The code for reading csv files from *convertedCSVfiles* folder and merge them into two csv files of bankrupt and healthy companies, ready for the next rounds of conversions.
-<br>
+The code for reading csv files from *convertedCSVfiles* folder and merge them into two csv files: *0.bankrupt_list.csv* and *0.healthy_list.csv*<br>
