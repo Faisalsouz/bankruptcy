@@ -1,4 +1,4 @@
-## Eikon Folder Contents (under construction...)
+## Eikon Folder Contents
 
 ### 0. Identifiers_Mapping
 
