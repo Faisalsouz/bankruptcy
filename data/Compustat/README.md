@@ -125,9 +125,8 @@ The file includes the same 175019 rows of Compustat raw data, but for the follow
 This is the parent file of the previous two.
 
 
-### 4-5. compustat2csv.[py,ipynb]
+### 4-5. compustat2csv.ipynb
 Code for creating those csv files out of the raw data.
-The notebook version, which delivers a more visually comprehensible version of the code, is available only on _notebook_ branch.
 
 
 ### 6. compustat.csv
