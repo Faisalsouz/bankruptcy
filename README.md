@@ -48,6 +48,11 @@ If you just need to update your environment run the following command:
 conda env update -f install.yml
 ```
 
+## Dependencies
+This list shows all the necessary dependencies to run the Machine Learning Prediction script(s) with the respective version to use (please make sure your version matches :wink:, otherwise we might run into troubles later on):
+- pandas : 0.25.3
+- numpy : 1.17.4
+
 
 ## Running the Data Extraction script 
 In case you are running the extract_data.py script, please make sure to provide at least the (full!) path to the source folder containing the data (you can optionally set the destination folder as a third argument). Don't use relative paths like "../Data". An example would be:
