@@ -12,37 +12,38 @@ The folder contains three other folders of the efforts to retrieve RICs from Eik
 
 ### 1. data_bankrupt_CIK
 
-The folder contains data downloaded using bankrupt companies' CIKs. One hundred of these csv files are all the historical data available on Eikon for each bankrupt company that has a valid CIK and are saved by the company's CIK code, and one file *bankrupt_data.csv*, includes financial factors/ratios of all bankrupt companies with a valid CIK.
+The folder contains data downloaded using bankrupt companies' CIKs. The bankrupt CIKs list is divided into chunks of, at most, 500 companies (it makes 3 chunks) for each chunk the data for 26 financial factors were downloaded for 20 years (2000-2019), each year in one csv files. That makes 3 * 20 = 60 csv files for bankrupt companies.
 
 
-### 2. data_bankrupt_RIC
+### 2. data_healthy_CIK
 
-The folder contains data downloaded using bankrupt companies' RICs. One hundred of these csv files are all the historical data available on Eikon for each bankrupt company that has a valid RIC and are saved by the company's RIC code, and one file *bankrupt_data.csv*, includes financial factors/ratios of all bankrupt companies with a valid RIC.
-
-
-### 3. data_healthy_CIK
-
-The folder contains data downloaded using healthy companies' CIKs. One hundred of these csv files are all the historical data available on Eikon for each healthy company that has a valid CIK and are saved by the company's CIK code, and one file *healthy_data.csv*, includes financial factors/ratios of all healthy companies with a valid CIK. <br>
-*Healthy data is not completely pushed to Git, because it exceeds both Github limitations on the files count and the total size of the files. Though, the data is fully uploaded on the study project's folder in OneDrive.*
+The folder contains data downloaded using healthy companies' CIKs. The healthy CIKs list is divided into chunks of, at most, 500 companies (it makes 30 chunks) for each chunk the data for 26 financial factors were downloaded for 20 years (2000-2019), each year in one csv files. That makes 30 * 20 = 600 csv files for healthy companies.
 
 
-### 4. data_healthy_RIC
+### 3. CIK_list_bankrupt.txt
 
-The folder contains data downloaded using healthy companies' RICs. One hundred of these csv files are all the historical data available on Eikon for each healthy company that has a valid RIC and are saved by the company's RIC code, and one file *healthy_data.csv*, includes financial factors/ratios of all healthy companies with a valid RIC.
-*Healthy data is not completely pushed to Git, because it exceeds both Github limitations on the files count and the total size of the files. Though, the data is fully uploaded on the study project's folder in OneDrive.*
+A pickle file of the CIK codes for 1103 bankrupt companies.
 
 
-### 5. GetDataWithCIKs.ipynb
+### 4. CIK_list_healthy.txt
+
+A pickle file of the CIK codes for 14761 healthy companies.
+
+
+### 5. GetDataWithCIKsAnnually.ipynb
 
 The code for downloading data using companies' CIK from Eikon.
 
-### 6. GetDataWithRICs.ipynb
 
-The code for downloading data using companies' RIC from Eikon.
+### 6. MergeCode.ipynb
+
+The code for merging all csv files in one dataframe.
+
 
 ### 7. README.md
 
 Just Read me!
+
 
 ### 8. eikon.cfg
 
