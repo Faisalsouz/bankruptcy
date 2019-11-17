@@ -10,12 +10,12 @@ The folder contains three other folders of the efforts to retrieve RICs from Eik
 * **README.md**
 
 
-### 1. data_bankrupt_CIK
+### 1. data_bankrupt
 
 The folder contains data downloaded using bankrupt companies' CIKs. The bankrupt CIKs list is divided into chunks of, at most, 500 companies (it makes 3 chunks) for each chunk the data for 26 financial factors were downloaded for 20 years (2000-2019), each year in one csv files. That makes 3 * 20 = 60 csv files for bankrupt companies.
 
 
-### 2. data_healthy_CIK
+### 2. data_healthy
 
 The folder contains data downloaded using healthy companies' CIKs. The healthy CIKs list is divided into chunks of, at most, 500 companies (it makes 30 chunks) for each chunk the data for 26 financial factors were downloaded for 20 years (2000-2019), each year in one csv files. That makes 30 * 20 = 600 csv files for healthy companies.
 
