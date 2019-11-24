@@ -65,9 +65,5 @@ target/
 # ignore local model checkpoints that are stored in the model folder
 model/
 
-# our healthy companies' data exceeds the Git limits both by number and size,
-# so we upload them on oneDrive, not here; here we have just some samples.
-/data/Eikon/data_healthy_RIC/*
-
 # ignore vs code 
 .vscode
