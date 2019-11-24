@@ -82,15 +82,15 @@ def extract_data(read_path, save_path):
 							####
 							# CLEAN THE SECTIONS FROM UNNECESSARY CONTENT
 							####
-							file = re.sub(r"<table.*?</table>", "", file); # remove tables
-							file = re.sub(r"italic.*?(?=</font)", "", file); # remove bold text and legends/notes
-							file = re.sub(r"underline.*?(?=</font)", "", file); # remove underlined text
-							file = re.sub(r"<.*?(?=>)", "", file); # remove html tags 
-							file = re.sub(r"&[^;]*;", "", file); # remove html links/placeholder
+							file = re.sub(r"<table.*?</table>", "", file) # remove tables
+							file = re.sub(r"italic.*?(?=</font)", "", file) # remove bold text and legends/notes
+							file = re.sub(r"underline.*?(?=</font)", "", file) # remove underlined text
+							file = re.sub(r"<.*?(?=>)", "", file) # remove html tags 
+							file = re.sub(r"&[^;]*;", "", file) # remove html links/placeholder
 							file = re.sub(r"\n+", "", file) # remove newlines
-							file = re.sub(r"&[^;]*;", "", file); # remove html links/placeholder
-							file = re.sub(r">+", " ", file); # remove unnecessary '>' around numbers
-							file = re.sub(r"table of contents", "", file); # remove leftovers referencing the table of contents
+							file = re.sub(r"&[^;]*;", "", file) # remove html links/placeholder
+							file = re.sub(r">+", " ", file) # remove unnecessary '>' around numbers
+							file = re.sub(r"table of contents", "", file) # remove leftovers referencing the table of contents
 							
 							# save results in file (name format CIK_date.txt)
 							out_file = open("{}/{}/{}_{}.txt".format(save_path, subdir, cik, date_matches.group(1)), "w") 
