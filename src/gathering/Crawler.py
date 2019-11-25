@@ -36,7 +36,7 @@ class EdgarFilingCrawler:
         counter = 0
         while (not success and counter < self._max_retry):
             counter += 1
-            r = requests.get(self._base_request_url)
+            r = requests.get(url)
             if r.status_code == 200:
                 message = self._add_to_string(message, '{}. Request was successfull ({})'.format(counter, r.status_code))
                 success = True
@@ -58,10 +58,10 @@ class EdgarFilingCrawler:
         Returns:
             True, if the CIK has the correct format.
         """
-        invalid_str = isinstance(cik, str) and len(cik) != 10
-        invalid_int = isinstance(cik, int) and not (999999999 < cik < 10**10)
-        invalid_type = not isinstance(cik, (int, str))
-        return invalid_str or invalid_int or invalid_type
+        valid_str = isinstance(cik, str) and len(cik) == 10
+        valid_int = isinstance(cik, int) and (999999999 < cik < 10**10)
+        valid_type = isinstance(cik, (int, str))
+        return (valid_str or valid_int) and valid_type
 
 
     def get_latest_filing_links(self, cik, priorto, filing_type, count=1):
@@ -83,7 +83,7 @@ class EdgarFilingCrawler:
         result = []
         if self.check_cik_format(cik):
             # create the request
-            params = {'action': 'getcompany', 'owner': 'exclude', 'output': 'xml', 'CIK': cik, 'type': filing_type, 'dateb': priorto, 'count': count}
+            params = {'action': 'getcompany', 'owner': 'exclude', 'CIK': cik, 'type': filing_type, 'dateb': priorto, 'count': count}
             counter = 0
             while (not success and counter < self._max_retry):
                 counter += 1
@@ -132,7 +132,7 @@ class EdgarFilingCrawler:
             A list with links to the filings.
         """
         soup = BeautifulSoup(data, features='html.parser')
-        link_list = [link.href for link in soup.find_all(id='documentsbutton')]
+        link_list = [link['href'] for link in soup.find_all(id='documentsbutton')]
         txt_urls = [self._base_url + link[:link.rfind("-")] + ".txt" for link in link_list]
         if len(txt_urls) > counter:
             txt_urls = txt_urls[:counter]

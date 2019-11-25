@@ -6,23 +6,25 @@ import sys
 import pickle
 import logging
 import json
+import time
 
 # prepare the logging
 logger = logging.getLogger('extract_section')
 logger.setLevel(logging.DEBUG)
 # create console handler with a higher log level
 ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
+ch.setLevel(logging.DEBUG)
 # create formatter and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 # define some regex that we are going to use
-date_regex_t = re.compile(r"date as of change:\s*(\d*)") # extracting the timestamp
-amend_regex = re.compile(r"conformed\ssubmission\stype:\s*10-k/a") # regex to check file type: amends should be excluded since they do not contain the relevant section
-text_start = re.compile(r"(?<=href)(((?!href=)[\s\S])*?(discussion\s+and\s+analysis[\s\S]*?))(?=>)")
-text_end = re.compile(r"(?<=href)(((?!href=)[\s\S])*?(quantitative\s+and\s+qualitative[\s\S]*?))(?=>)")
+date_regex_t = re.compile(r"date as of change:\s*(\d*)", re.M|re.I) # extracting the timestamp
+amend_regex = re.compile(r"conformed\ssubmission\stype:\s*10-k/a", re.M|re.I) # regex to check file type: amends should be excluded since they do not contain the relevant section
+text_start = re.compile(r"(?<=href)(((?!href=)[\s\S])*?(discussion\s+and\s+analysis[\s\S]*?))(?=>)", re.M|re.I)
+text_end = re.compile(r"(?<=href)(((?!href=)[\s\S])*?(quantitative\s+and\s+qualitative[\s\S]*?))(?=>)", re.M|re.I)
+href_regex = re.compile(r"(\"|')[\s\S]*?(\"|')", re.M|re.I)
 
 def extract_section(full_text):
     """
@@ -37,8 +39,7 @@ def extract_section(full_text):
     section = ''
     extracted = False
     message = ''
-    # to avoid later problems we transform everything to lower case
-    full_text = full_text.lower()
+    filing_date = ''
     # check if the filling is of type amend
     is_amend = re.search(amend_regex, full_text)
     if is_amend:
@@ -48,25 +49,44 @@ def extract_section(full_text):
         try:
             # look for the date
             date_matches = re.search(date_regex_t, full_text)
-            message = _add_to_string(message, 'Date of filing: {}'.format(date_matches.group(1)))
-            # find the section
-            href_start = re.search(r"(\"|')[\s\S]*?(\"|')", re.search(text_start, full_text).group()).group()[2:-1]
-            href_end = re.search(r"(\"|')[\s\S]*?(\"|')", re.search(text_end, full_text).group()).group()[2:-1]
-            data_regex = re.compile(r"((name|id)=\"" + re.escape(href_start) + r"(?!" + re.escape(href_start) + r")[\s\S]*?(?=(name|id)=\"" + re.escape(href_end) +r"))")		    	
-            # if a match was found, start cleaning the section from html tags
-            match = re.search(data_regex, full_text)
-            if match: 
-                logging.info('MD&A section was found')
-                extracted = True
-                section = match.group() # match is a tuple -> join will make it a string
-                section = _clean_section(section)
-            else: 
-                logging.warning('MD&A section was not found')
-        except:
-            logging.error('Error during extraction: {}'.format(sys.exc_info()[0]))
+            if date_matches:
+                filing_date = date_matches.group(1)
 
+            # find the starting and ending href
+            found_href_start = False
+            raw_href_start_search = re.search(text_start, full_text)
+            if raw_href_start_search:
+                href_start_search = re.search(href_regex, raw_href_start_search.group())
+                if href_start_search:
+                    href_start = href_start_search.group()[2:-1]
+                    found_href_start = True
+            found_href_end = False
+            raw_href_end_search = re.search(text_end, full_text)
+            if raw_href_end_search:
+                href_end_search = re.search(href_regex, raw_href_end_search.group())
+                if href_end_search:
+                    href_end = href_end_search.group()[2:-1]
+                    found_href_end = True
 
-    return ExtractionResult(extracted, section, message)
+            # we just need to continue if we have found a starting and ending href
+            if (found_href_start and found_href_end):
+                data_regex = re.compile(r"((name|id)=\"" + re.escape(href_start) + r"(?!" + re.escape(href_start) + r")[\s\S]*?(?=(name|id)=\"" + re.escape(href_end) +r"))", re.M|re.I)	    	    	
+                # if a match was found, start cleaning the section from html tags
+                match = re.search(data_regex, full_text)
+                if match: 
+                    logging.info('MD&A section was found')
+                    extracted = True
+                    section = _clean_section(match.group())
+                else: 
+                    logging.warning('MD&A section was not found')
+            else:
+                logging.warning('Href start and/or href end was not found.')
+        except AttributeError as error:
+            logging.error('Error during extraction: {}'.format(error))
+        except Exception as exception:
+            logging.error('Error during extraction: {}'.format(exception))
+
+    return ExtractionResult(extracted, section, message, filing_date)
 
 
 def _clean_section(section):
@@ -115,12 +135,13 @@ class ExtractionResult:
     extracted = False
     section = None
     message = None
+    filing_date = None
     cik = None
     year = None
     form_type = None
     url = None
 
-    def __init__(self, extracted, section, message=''):
+    def __init__(self, extracted, section, message='', filing_date=''):
         """
         Initializes a new instance.
         
@@ -128,10 +149,12 @@ class ExtractionResult:
             extracted: A boolean value indicating whether the extraction was successful.
             section: The extracted section.
             message: The message to set.
+            filing_date: The filing date to set.
         """
         self.extracted = extracted
         self.section = section
         self.message = message
+        self.filing_date = filing_date
 
     
     def to_dict(self):
@@ -147,6 +170,7 @@ class ExtractionResult:
             "section": self.section,
             "CIK": self.cik,
             "year": self.year,
+            "filing_date": self.filing_date,
             "form_type": self.form_type,
             "url": self.url
         }
@@ -171,7 +195,7 @@ def main(pickled_cik_dict_path, save_path):
     # Create filing crawler
     crawler = EdgarFilingCrawler(10)
 
-    for year, cik_list in year_cik_dict:
+    for year, cik_list in year_cik_dict.items():
         save_year_path = '{}/{}'.format(save_path, year)
         if not os.path.exists(save_year_path):
             logging.info('Create output directory {}'.format(save_year_path))
@@ -179,7 +203,7 @@ def main(pickled_cik_dict_path, save_path):
             logging.info('Created output directory {}'.format(save_year_path))
         year_end_date = '{}1231'.format(year)
         for cik in cik_list:
-            cik = "{:010d}".format(cik)
+            cik = "{:010d}".format(int(cik))
             logging.info('Request filing list for CIK {} and year {}'.format(cik, year))
             request_result = crawler.get_latest_filing_links(cik, year_end_date, '10-K')
             if not request_result.success:
@@ -211,31 +235,30 @@ def main(pickled_cik_dict_path, save_path):
                             logging.info('Saved section ({})'.format(file_path))
                 else:
                     logging.warning('No links for CIK {} in year {}'.format(cik, year))
-
-
-    # TODO: Request filing
-    # TODO: Extract MD&A section
-    # TODO: Save result
     
 
 
 if __name__ == "__main__":
     # checks the provided arguments
     if len(sys.argv) != 3:
-        print("Wrong arguments! Please provide a FULL path to the data (pickled cik file) and an output folder for the extracted sections. Usage example: python3 extract_section.py /Users/Kai/Repositories/bankruptcy/data/Eikon/CIK_year.txt /Users/Kai/Documents/ExtractedData")
+        print("Wrong arguments! Please provide a FULL path to the data (pickled cik file) and an output folder for the extracted sections. Usage example: python3 extract_sections.py /Users/kdoennebrink/Repositories/bankruptcy/data/Eikon/CIK_year.txt /Users/kdoennebrink/Documents/ExtractedData")
         sys.exit(1)
     if (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
-        print("Usage example: python3 extract_section.py /Users/Kai/Repositories/bankruptcy/data/Eikon/CIK_year.txt /Users/Kai/Documents/ExtractedData")
+        print("Usage example: python3 extract_sections.py /Users/kdoennebrink/Repositories/bankruptcy/data/Eikon/CIK_year.txt /Users/kdoennebrink/Documents/ExtractedData")
         sys.exit(0)
     
     read_path = sys.argv[1]
     save_path = sys.argv[2]
 
+    # create output path
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
     # create file handler which logs even debug messages
     fh = logging.FileHandler('{}/extract_sections.log'.format(save_path))
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
     fh.setFormatter(formatter)
+    logger.addHandler(fh)
 
     # start
     logging.info('Start the extraction')
