@@ -1,5 +1,6 @@
 import requests
 import time
+import xml.etree.ElementTree as ET 
 from bs4 import BeautifulSoup
 
 class EdgarFilingCrawler:
@@ -83,7 +84,7 @@ class EdgarFilingCrawler:
         result = []
         if self.check_cik_format(cik):
             # create the request
-            params = {'action': 'getcompany', 'owner': 'exclude', 'CIK': cik, 'type': filing_type, 'dateb': priorto, 'count': count}
+            params = {'action': 'getcompany', 'owner': 'exclude', 'output': 'xml', 'CIK': cik, 'type': filing_type, 'dateb': priorto, 'count': count}
             counter = 0
             while (not success and counter < self._max_retry):
                 counter += 1
@@ -92,7 +93,7 @@ class EdgarFilingCrawler:
                     message = self._add_to_string(message, '{}. Request was successfull ({})'.format(counter, r.status_code))
                     success = True
                     data = r.text
-                    result = self._get_filing_links(data, counter)
+                    result = self._get_filing_links(data, counter, filing_type)
                 else:
                     message = self._add_to_string(message, '{}. Request was not successfull ({})'.format(counter, r.status_code))
                     # just wait 3 seconds
@@ -120,20 +121,24 @@ class EdgarFilingCrawler:
         return string_to_extend
 
 
-    def _get_filing_links(self, data, counter):
+    def _get_filing_links(self, data, counter, filing_type):
         """
         Gets the filing links from the given data.
 
         Args:
-            data (str): The html-text containing the filing links.
+            data (str): The xml-text containing the filing links.
             counter (int): The number of links to look for.
+            filing_type (str): Choose from list of valid filing types ('10-Q', '10-K', '8-K', '13-F', 'SD')
 
         Returns:
             A list with links to the filings.
         """
-        soup = BeautifulSoup(data, features='html.parser')
-        link_list = [link['href'] for link in soup.find_all(id='documentsbutton')]
-        txt_urls = [self._base_url + link[:link.rfind("-")] + ".txt" for link in link_list]
+        root = ET.fromstring(data)
+        link_list = []
+        for filing in root.findall('./results/filing'):
+            if filing.find('type').text == filing_type:
+                link_list.append(filing.find('filingHREF').text)
+        txt_urls = [link[:link.rfind("-")] + ".txt" for link in link_list]
         if len(txt_urls) > counter:
             txt_urls = txt_urls[:counter]
         return txt_urls
