@@ -14,7 +14,7 @@ Original file is located at
 # %tensorflow_version 1.x
 import numpy as np
 import pandas as pd
-import tensorflow as tf
+# import tensorflow as tf
 import matplotlib.pyplot as plt
 from keras.models import Sequential
 from sklearn.metrics import confusion_matrix
@@ -29,7 +29,7 @@ from keras.preprocessing.sequence import TimeseriesGenerator
 BATCH_TRAINING = 2
 
 # The function used to evaluate performace of the model and tune the parameters.
-LOSS_FUNCTION = tf.keras.losses.BinaryCrossentropy()
+LOSS_FUNCTION = 'binary_crossentropy'
 
 # The function by which your models parameters are adjusted to seek a local minimum.
 # OPTIMIZER = adjusted within the network functions
@@ -38,7 +38,7 @@ LOSS_FUNCTION = tf.keras.losses.BinaryCrossentropy()
 LEARNING_RATE = 1
 
 # The number of iterations for which the model is trained.
-EPOCHS = 20
+EPOCHS = 1
 
 """### Load the Dataset"""
 
@@ -64,17 +64,16 @@ test_labels = []
 
 idx = 0
 for i in range(len(data_res)):
-  if (idx <= split):
-    train_data.append(data_res[i])
-    train_labels.append(labels_res[i])
-  else:
-    test_data.append(data_res[i])
-    test_labels.append(labels_res[i])
-    if idx == split + 3:
-      idx = 0
-      continue
-
-  idx += 1
+    if (idx <= split):
+        train_data.append(data_res[i])
+        train_labels.append(labels_res[i])
+    else:
+        test_data.append(data_res[i])
+        test_labels.append(labels_res[i])
+        if idx == split + 3:
+            idx = 0
+            continue
+    idx += 1
 
 # Old Split.
 # split = 20 * 0.8
@@ -139,6 +138,8 @@ def NN_Standard(input_shape):
                   # TODO: ROC Score
                   metrics=['accuracy'])
 
+    model.summary()
+
     return model
 
 
@@ -157,6 +158,8 @@ def NN_Deep(input_shape):
                   # TODO: ROC Score
                   metrics=['accuracy'])
 
+    model.summary()
+
     return model
 
 # A wide NN.
@@ -166,54 +169,108 @@ def NN_Wide(input_shape):
     model.add(Dense(22, input_shape=input_shape))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
+
     model.compile(optimizer='adam',
                   loss=LOSS_FUNCTION,
                   # TODO: ROC Score
                   metrics=['accuracy'])
 
+    model.summary()
+
     return model
+
+
+def lstm_model(input_shape):
+    """
+    Implements a network with LSTM architecture
+    :param input_shape: Data Sequence's shape (tuple)
+    :return: compiled/init model
+    """
+    model = Sequential()
+    model.add(LSTM(16, input_shape=input_shape))
+    model.add(Flatten())
+    model.add(Dense(1, activation='sigmoid'))  # sigmoid for binary
+
+    # init step
+    model.compile(optimizer='adam',
+                  loss=LOSS_FUNCTION,
+                  # TODO: ROC Score
+                  metrics=['accuracy'])
+
+    model.summary()
+
+    return model
+
+
+def crnn_model(input_shape):
+    """
+    Implements a network with CRNN architecture
+    :param input_shape: Data Sequence's shape (tuple)
+    :return: compiled/init model
+    """
+    model = Sequential()
+    model.add(Conv1D(16, 3, input_shape=input_shape))
+    model.add(LSTM(16))
+    model.add(Flatten())
+    model.add(Dense(1, activation='sigmoid'))  # sigmoid for binary
+
+    # init step
+    model.compile(optimizer='adam',
+                  loss=LOSS_FUNCTION,
+                  # TODO: ROC Score
+                  metrics=['accuracy'])
+
+    model.summary()
+
+    return model
+
+
 
 """### Train the model."""
 
 # Clear the session.
-tf.keras.backend.clear_session()
+# keras.backend.clear_session()
 
 # Initialize the selected model.
 # model = NN_Standard((num_inputs, num_features))
 # model = NN_Deep((num_inputs, num_features))
-model = NN_Wide((num_inputs, num_features))
+models = [NN_Standard((num_inputs, num_features)),
+          NN_Wide((num_inputs, num_features)),
+          NN_Deep((num_inputs, num_features))]
+# models.append(lstm_model((num_inputs, num_features)))
+# models.append(crnn_model((num_inputs, num_features)))
 
 # Print details of the model.
-model.summary()
 
 # Train for appropriate number of epochs.
-history = model.fit_generator(train_generator, epochs=EPOCHS)
+histories = []
+for i in range(len(models)):
+    histories.append(models[i].fit_generator(train_generator, epochs=EPOCHS))
+
 
 """### Visualize the Training Process"""
 
 # Visualize evaluation measures for training and test data. 
 # TODO: Plot precision and ROC.
 
-# Plot train and test loss.
-plt.plot(history.history['loss'])
-plt.title('Train Loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.show()
-
-# Plot test accuracy.
-plt.plot(history.history['acc'])
-plt.title('Train Accuracy')
-plt.ylabel('Accuracy')
-plt.xlabel('Epoch')
-plt.ylim(0, 1)
-plt.show()
+fig, ax = plt.subplots(len(models), 2, figsize=(15, 70))
+for i in range(len(models)):
+    for j in range(2):
+        if j == 0:
+            ax[i][j].set_title("Accuracy")
+            ax[i][j].plot(histories[i].history['accuracy'])
+            ax[i][j].set_ylim([0, 1])
+        elif j == 1:
+            ax[i][j].set_title("Loss")
+            ax[i][j].plot(histories[i].history['loss'])
+        ax[i][j].axis('off')
 
 """### Evaluate Models on Test Data"""
 
 # Evaluate model on test dataset.
-score, acc = model.evaluate(test_generator)
-print(acc)
+for m in models:
+    score, acc = m.evaluate(test_generator)
+    print("Model: ", acc)
 
 # TODO: Resolve confusion matrix for assessing test data results.
 # TODO: Make sure benchmarks and network models are evaluated on same metrics.
