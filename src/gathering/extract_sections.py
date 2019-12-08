@@ -1,5 +1,5 @@
 import requests
-from crawler import EdgarFilingCrawler
+from Crawler import EdgarFilingCrawler
 import re
 import os
 import sys
@@ -9,7 +9,7 @@ import json
 import time
 
 # define some codes
-NOT_COMPLETED, SUCCESS, ERROR_NO_HREF, ERROR_NO_SECTION, ERROR_YEAR_NOT_VALID = range(5)
+NOT_COMPLETED, SUCCESS, ERROR_NO_HREF, ERROR_NO_SECTION, ERROR_YEAR_NOT_VALID, ERROR_TITLE = range(6)
 
 # prepare the logging
 logger = logging.getLogger('extract_section')
@@ -45,6 +45,8 @@ def extract_section(full_text):
     message = ''
     filing_date = ''
     form_type = ''
+    href_start = ''
+    href_end = ''
     
     try:
         # get the form type
@@ -52,34 +54,51 @@ def extract_section(full_text):
         # search the filing date
         filing_date = _search_pattern(full_text, filing_date_regex, group=1)
 
-        # search the starting and ending href
-        href_start = _search_href(full_text, href_start_regex)
-        href_end = _search_href(full_text, href_end_regex)
+        if _search_pattern(full_text, re.compile(r"href", re.I|re.M)):
+            logger.info('Search MD&A section by HREFs')
+            # search the starting and ending href
+            href_start = _search_href(full_text, href_start_regex)
+            href_end = _search_href(full_text, href_end_regex)
+            logger.debug("href_start: {}, href end: {}".format(href_start, href_end))
 
-        # we just need to continue if we have found a starting and ending href
-        if (href_start and href_end):
-            data_regex = re.compile(r"((name|id)=\"" + re.escape(href_start) + r"(?!" + re.escape(href_start) + r")[\s\S]*?(?=(name|id)=\"" + re.escape(href_end) +r"))", re.M|re.I)	    	    	
-            match = re.search(data_regex, full_text)
-            if match: 
+            # we just need to continue if we have found a starting and ending href
+            if (href_start and href_end):
+                data_regex = re.compile(r"((name|id)=(\"|')" + re.escape(href_start) + r"(?!" + re.escape(href_start) + r")[\s\S]*?(?=(name|id)=(\"|')" + re.escape(href_end) +r"))", re.M|re.I)	    	    	
+                match = re.search(data_regex, full_text)
+                if match: 
+                    logger.info('MD&A section was found')
+                    extracted = True
+                    code = SUCCESS
+                    section = _clean_section(match.group())
+                else: 
+                    message_str = 'MD&A section was not found'
+                    message = _add_to_string(message, message_str)
+                    logger.warning(message_str)
+                    code = ERROR_NO_SECTION
+            else:
+                message_str = 'Href start and/or href end was not found.'
+                message = _add_to_string(message, message_str)
+                logger.warning(message_str)
+                code = ERROR_NO_HREF
+        else:
+            logger.info('Search MD&A section by section titles')
+            code = ERROR_TITLE
+            dirty_section = _search_with_title(full_text)
+            if dirty_section:
                 logger.info('MD&A section was found')
                 extracted = True
                 code = SUCCESS
-                section = _clean_section(match.group())
-            else: 
+                section = _clean_section(dirty_section)
+            else:
                 message_str = 'MD&A section was not found'
                 message = _add_to_string(message, message_str)
                 logger.warning(message_str)
-                code = ERROR_NO_SECTION
-        else:
-            message_str = 'Href start and/or href end was not found.'
-            message = _add_to_string(message, message_str)
-            logger.warning(message_str)
-            code = ERROR_NO_HREF
+                code = ERROR_TITLE
     except AttributeError as error:
         logger.exception('Attribute error: %s', error)
     except Exception as exception:
         logger.exception('Unknown error: %s', exception)
-    return ExtractionResult(extracted, section, message=message, filing_date=filing_date, form_type=form_type, code=code)
+    return ExtractionResult(extracted, section, message=message, filing_date=filing_date, form_type=form_type, code=code, href_start=href_start, href_end=href_end)
 
 
 def _search_href(text, regex):
@@ -94,12 +113,43 @@ def _search_href(text, regex):
         The href if it was found.
     """
     href = ''
-    raw_href_search = re.search(regex, text)
-    if raw_href_search:
-        href_search = re.search(href_regex, raw_href_search.group())
+    matches_list = re.findall(regex, text)
+    if matches_list:
+        # sort the founded strings by length
+        matches_string_list = [''.join(match) for match in matches_list]
+        sort_matches_list = sorted(matches_string_list, key=len)
+        href_search = re.search(href_regex, sort_matches_list[0])
         if href_search:
             href = href_search.group()[2:-1]
     return href
+
+
+def _search_with_title(text):
+    """
+    Searches the MD&A section using the section titles of Item 7. and Item 7A or Item 8.
+
+    Args:
+        text (str): The text in which the section must be found.
+
+    Returns:
+        The section if it waas found. Otherwise, an empty string is returned.
+    """
+    section = ''
+    if _search_pattern(text, re.compile(r"item 7a", re.M|re.I)):
+        # look for item 7a
+        title_regex = re.compile(r"discussion\s+?and\s+?analysis([\s\S]+?)quantitative\s+?and\s+?qualitative", re.I|re.M)
+    else:
+        # look for item 8 instead
+        title_regex = re.compile(r"discussion\s+?and\s+?analysis([\s\S]+?)financial\s+statements\s+and\s+supplementary\s+data", re.I|re.M)
+    # search for matches
+    matches_list = re.findall(title_regex, text)
+    if matches_list:
+        # sort the founded strings descending by length
+        matches_string_list = [''.join(match) for match in matches_list]
+        sort_matches_list = sorted(matches_string_list, key=len, reverse=True)
+        section = sort_matches_list[0]
+    return section
+
 
 def _search_pattern(text, pattern, group=0):
     """
@@ -191,8 +241,10 @@ class ExtractionResult:
     form_type = None
     url = None
     code = NOT_COMPLETED
+    href_start = None
+    href_end = None
 
-    def __init__(self, extracted='', section='', message='', filing_date='', form_type='', code=NOT_COMPLETED):
+    def __init__(self, extracted='', section='', message='', filing_date='', form_type='', code=NOT_COMPLETED, href_start='', href_end=''):
         """
         Initializes a new instance.
         
@@ -203,6 +255,8 @@ class ExtractionResult:
             filing_date (Date | str): The filing date to set.
             form_type (str): The form type.
             code (int): Indicates the current status of the extraction.
+            href_start (str): The extracted starting href.
+            href_end (str): The extracted ending href.
         """
         self.extracted = extracted
         self.section = section
@@ -210,6 +264,8 @@ class ExtractionResult:
         self.filing_date = filing_date
         self.form_type = form_type
         self.code = code
+        self.href_end = href_end
+        self.href_start = href_start
 
 
     def _check_date(self):
@@ -221,6 +277,7 @@ class ExtractionResult:
                 self.code = ERROR_YEAR_NOT_VALID
                 logger.warning('The year does not match the filing date for CIK {} and year {}.'.format(self.cik, self.year))
     
+
     def to_dict(self):
         """
         Creates a dictionary from the saved data.
@@ -238,7 +295,9 @@ class ExtractionResult:
             "year": self.year,
             "filing_date": self.filing_date,
             "form_type": self.form_type,
-            "url": self.url
+            "url": self.url,
+            "href_start": self.href_start,
+            "href_end": self.href_end
         }
         return status_dict
 
@@ -303,7 +362,6 @@ def _download_section(cik, date, save_dir):
     logger.info('Request filing list for CIK {} and year {}'.format(cik, year))
     # we request the 10 latest links because sometimes the filings include amend files
     request_result = crawler.get_latest_filing_links(cik, date, '10-K', count=10)
-    time.sleep(1) # sleep for one second before the next request
     if not request_result.success:
         logger.warning('Request was not successful for CIK {} and year {}. Message: {}'.format(cik, year, request_result.message))
     else:
@@ -313,7 +371,6 @@ def _download_section(cik, date, save_dir):
             logger.info('Request filing for CIK {} and year {}'.format(cik, year))
             logger.debug(link_list[0])
             filing_result = crawler.get_filing(link_list[0])
-            time.sleep(1) # sleep for one second before the next request
             if not filing_result.success:
                 logger.warning('Request was not successful for CIK {} and year {}. Message: {}'.format(cik, year, filing_result.message))
             else:
