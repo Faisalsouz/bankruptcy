@@ -90,6 +90,15 @@ def LinReg(x_train, y_train, x_test):
     # Model Accuracy, how often is the classifier correct?
     print("Accuracy:", metrics.accuracy_score(test_labels, label_pred, 1))
     print("Precision:", metrics.precision_score(test_labels, label_pred, 1))
+    
+def mda(x_train, y_train, x_test):
+    cmda = LinearDiscriminantAnalysis()
+    cmda.fit(x_train, y_train)
+    label_pred = cmda.predict(x_test)
+    # Model Accuracy, how often is the classifier correct?
+    print("MDA Accuracy:", metrics.accuracy_score(test_labels, label_pred, 1))
+    print("MDA Precision:", metrics.precision_score(test_labels, label_pred, 1))
+
 
 print(rf(train_data, train_labels, test_data))
 print(svm(train_data, train_labels, test_data))
