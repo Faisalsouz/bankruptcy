@@ -99,7 +99,7 @@ def mda(x_train, y_train, x_test):
     print("MDA Accuracy:", metrics.accuracy_score(test_labels, label_pred, 1))
     print("MDA Precision:", metrics.precision_score(test_labels, label_pred, 1))
 
-
-print(rf(train_data, train_labels, test_data))
-print(svm(train_data, train_labels, test_data))
-print(LinReg(train_data, train_labels, test_data))
+rf(train_data, train_labels, test_data)
+svm(train_data, train_labels, test_data)
+LinReg(train_data, train_labels, test_data)
+mda(train_data, train_labels, test_data)
