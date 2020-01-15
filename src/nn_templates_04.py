@@ -4,9 +4,11 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+from imblearn.over_sampling import ADASYN, SMOTE
+
 from sklearn.metrics import confusion_matrix, roc_auc_score
-from imblearn.over_sampling import ADASYN
 
 from keras.layers import *
 from keras.metrics import *
@@ -20,8 +22,14 @@ from keras.preprocessing.sequence import TimeseriesGenerator
 
 np.random.seed(0)  # NEVER CHANGE THIS
 
+# split ratio
+SPLIT_RATIO = 0.8
+
+# how many years should be used to predict the outcome
+PREDICTION_HORIZON = 5
+
 # The batch size by which the training data is fed into the network.
-BATCH_TRAINING = 2
+BATCH_TRAINING = 10
 
 # The function used to evaluate performace of the model and tune the parameters.
 LOSS_FUNCTION = 'binary_crossentropy'
@@ -69,8 +77,8 @@ class ROCCallback(Callback):
 def NN_Standard(input_shape):
     # TODO: original paper uses Convolutional layer or Fully connected/Dense?
     model = Sequential()
-    model.add(Conv1D(filters=8, kernel_size=3, input_shape=input_shape))
-    # model.add(Dense(4, input_shape=input_shape))
+    # model.add(Conv1D(filters=8, kernel_size=3, input_shape=input_shape))
+    model.add(Dense(4, input_shape=input_shape))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
 
@@ -131,6 +139,7 @@ def NN_Wide(input_shape):
 
 def NN_LSTM(input_shape):
     model = Sequential()
+    # LSTMs expect different shape, hence:
     model.add(LSTM(16, input_shape=input_shape, return_sequences=True))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
@@ -198,87 +207,104 @@ def NN_CRNN(input_shape):
     return (history, roc_callback.results)
 
 
-
 # Load the Dataset
 
 # Import dataset from relevant source(s)
-# TODO: Load full dataset, including embedding features.
-bankrupt = 'https://raw.githubusercontent.com/shrnkm/bankruptcy/master/data/Eikon/small_test_sets/data_test_bankrupt.csv?token=AMBTQIEDX3Y6THOUJCBWE5C57D2BI'
-healthy = 'https://raw.githubusercontent.com/shrnkm/bankruptcy/master/data/Eikon/small_test_sets/data_test_healthy.csv?token=AMBTQIDFPLUT2BGKOBNM2GK57D2EK'
-df_mixed = pd.concat([pd.read_csv(bankrupt), pd.read_csv(healthy)])
+# data_path = 'https://raw.githubusercontent.com/shrnkm/bankruptcy/master/data/processed/data.csv?token=AGV7MS4OJ76A77JF5FM5SBS6EVLSK'
+data_path = '/Users/Anna/GitHub/bankruptcy/data/processed/data2.csv'
+data = pd.read_csv(data_path)
 
-# Balance the dataset using adasyn
-data = np.array(df_mixed.drop(['Instrument', 'Bankrupt'], axis=1).values)
-labels = np.array(df_mixed['Bankrupt'])
-data_res, labels_res = ADASYN(n_neighbors=3).fit_sample(data, labels)
+labels = np.array(data.loc[:, "Bankrupt"])
+data = data.drop(['Bankrupt'], axis=1)
 
-# TODO: normalize?
+print("\nNumber of data samples: {}\n Example entry: \n".format(len(data)))
+print("{} => Label: {}".format(data.loc[0], labels[0]))
 
-# # Split data based on years (80% of all years for training, 20% for testing).
-split = 20 * 0.8
-print("\nSplit after year {}".format(split))
+# transform pd dataframe to numpy array
+data = np.array(data)
 
-train_data = []
-train_labels = []
-test_data = []
-test_labels = []
 
-idx = 0
-for i in range(len(data_res)):
-    if idx <= split:
-        train_data.append(data_res[i])
-        train_labels.append(labels_res[i])
-    else:
-        test_data.append(data_res[i])
-        test_labels.append(labels_res[i])
-        if idx == split + 3:
-            idx = 0
-            continue
-    idx += 1
+# Balance the dataset
+# ADASYN throws runtime error:
+# RuntimeError: Not any neigbours belong to the majority class. This case will induce a NaN case with a division by
+# zero. ADASYN is not suited for this specific dataset. Use SMOTE instead.
+# data_res, labels_res = ADASYN(n_neighbors=3).fit_sample(data, labels)
+# passing 'minority' arg to only resample the minority class instead of both
+# data_res, labels_res = SMOTE('minority').fit_sample(data, labels)
 
-# Drop irrelevant columns (years, instrument).
-train_data = np.delete(train_data, 0, axis=1)
-train_data = np.delete(train_data, -2, axis=1)
-test_data = np.delete(test_data, 0, axis=1)
-test_data = np.delete(test_data, -2, axis=1)
-print("Length train data: {}, Length test data: {}".format(len(train_data), len(test_data)))
+# print("\nLength after re-sampling: {}\n".format(len(data_res)))
+# print("{} => Label: {}".format(data_res[0], labels_res[0]))
 
+unique_ciks, indices = np.unique(data[:, 0], return_index=True)
+
+new_data = []
+new_labels = []
+prev_idx = 0
+for idx in indices:
+    entries = range(prev_idx, idx)
+    # only append most recent entries
+    for entry in entries[-PREDICTION_HORIZON:]:
+        new_data.append(data[entry])
+        new_labels.append(labels[entry])
+    prev_idx = idx
+
+new_data = np.asarray(new_data)
+new_labels = np.asarray(new_labels)
+
+# get index where to split based on the unique CIKs
+cik_split_idx = unique_ciks[int(len(unique_ciks) * SPLIT_RATIO)]
+
+# find the CIK in data
+# np.where returns first occurrence of index (= first entry of company)
+overall_split_idx = np.where(new_data[:, 0].astype(int) == cik_split_idx)[0][0]
+
+# Drop irrelevant columns (years, CIK)
+new_data = np.delete(new_data, [0, 1], axis=1)
+
+train_data = new_data[:overall_split_idx]
+train_labels = new_labels[:overall_split_idx]
+test_data = new_data[overall_split_idx:]
+test_labels = new_labels[overall_split_idx:]
+
+# print("Len train data: ", len(train_data), " last sample: ", train_data[-1])
+# print("Len test data: ", len(test_data), " first sample: ", test_data[0])
 
 # Investigate the Dataset
 
 # Print relevant information about the dataset(s) structure.
-print("Number of training instruments: {}\nNumber of test instruments:{}".format(len(train_data), len(test_data)))
-print("Shape of one instrument datapoint: {}".format(train_data[0].shape))
-print("Example instrument:\n\n{}".format(df_mixed.loc[0]))
-
-# TODO:
-# Visualize the Dataset
-# Visualize specific examples from the dataset to gain understanding of what each datapoint is composed.
+print("Training samples: {}. Test samples: {}".format(len(train_data), len(test_data)))
+print("Shape of one data point: {}".format(train_data[0].shape))
+# print("Example data entry:\n\n{}".format(train_data[0]))
 
 
 # Build the dataset
 
 num_features = train_data[0].shape[0]
-num_inputs = int(split)
 
+print("\n\n Generating Time Series Generator..")
 # Initialize the time-series generators
-train_generator = TimeseriesGenerator(train_data, train_labels, length=num_inputs, batch_size=BATCH_TRAINING, stride=num_inputs+1)
-# TODO: fix length as the input for the test gen is only 3 and not 16! (year 2017-2019!)
-test_generator = TimeseriesGenerator(test_data, test_labels, length=num_inputs)
+# length = how many years to use for one target (use LENGTH inputs to predict Y)
+# batch size = how many companies to pass during one forward pass
+# stride = NEVER overlap companies since this would result in wrong labels
+# hence, start next time series input AFTER the last one
+train_generator = TimeseriesGenerator(train_data, train_labels, length=PREDICTION_HORIZON,
+                                      batch_size=BATCH_TRAINING, stride=PREDICTION_HORIZON+1)
+test_generator = TimeseriesGenerator(test_data, test_labels, length=PREDICTION_HORIZON)
 
 # Inspect the generator
-print('Number of samples: {}'.format(len(train_generator)))
-print('Number of samples in first input pass: {}'.format(len(train_generator[0])))
-print("Length of test generator: {}".format(len(test_generator.data)))
-
+# train_generator.targets = labels
+print('Number of samples: {}'.format(len(train_generator.data)))
+# corresponds to batch size
+print('Number of companies in first input pass: {}'.format(len(train_generator[0])))
+print('Number of years to use for one output: '.format(train_generator.length))
 
 # Train and build the models
 models = [
-  Model(NN_Standard((num_inputs, num_features)), 'Default Network'),
-  Model(NN_Deep((num_inputs, num_features)), 'Deep Network'),
-  Model(NN_Wide((num_inputs, num_features)), 'Wide Network'),
-  Model(NN_LSTM((num_inputs, num_features)), 'LSTM Network'),
-  Model(NN_CRNN((num_inputs,num_features)), 'CRNN Network')
+  Model(NN_Standard((PREDICTION_HORIZON, num_features)), 'Default Network'),
+  Model(NN_Deep((PREDICTION_HORIZON, num_features)), 'Deep Network'),
+  Model(NN_Wide((PREDICTION_HORIZON, num_features)), 'Wide Network'),
+  Model(NN_LSTM((PREDICTION_HORIZON, num_features)), 'LSTM Network'),
+  Model(NN_CRNN((PREDICTION_HORIZON,num_features)), 'CRNN Network')
 ]
 
 
@@ -324,7 +350,6 @@ for m in models:
 # TODO: Make sure benchmarks and network models are evaluated on same metrics.
 # TODO: Test different network architectures and layer types. Compare results.
 # TODO: Test different optimizers.
-
 # Optimization
 
 # Batch normalization.
