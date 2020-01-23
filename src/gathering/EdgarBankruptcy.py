@@ -1,5 +1,5 @@
 import requests
-from Crawler import EdgarQueryCrawler
+from crawler import EdgarQueryCrawler
 import re
 
 
@@ -14,7 +14,7 @@ def check_bankruptcy(start = 1):
         A list with the company name, CIK code, bankruptcy flag, chapter of bankruptcy, the form type and date and the URL to the form.
     """
     crawler = EdgarQueryCrawler()
-    search_string = 'items=1.03 AND (type=8-K OR type=8-K/A)'
+    search_string = r'items=1.03 AND (type=8-K OR type=8-K/A)'
     raw_list = crawler.get_all_filings(search_string, 1994, 2019, start)
     out_list = []
     for company, url, form_type, date in raw_list:
@@ -59,7 +59,7 @@ def _get_bankruptcy_chapter(text):
         The number of the chapter, if it was found, otherwise -1.
     """
     chapter = -1
-    chapter_regex = '[Cc]hapter(&nbsp;| )(7|11) (of [Tt]itle(&nbsp;| )11|of the( United States | US | U.S. | | Federal )Bankruptcy (Act|Code))'
+    chapter_regex = r'[Cc]hapter(&nbsp;| )(7|11) (of [Tt]itle(&nbsp;| )11|of the( United States | US | U.S. | | Federal )Bankruptcy (Act|Code))'
     r = re.compile(chapter_regex)
     matches = r.findall(text.replace('\n', ' ').replace('\r', ''))
     if matches:
@@ -78,7 +78,7 @@ def _get_cik(text):
         The cik, if it was found, otherwise -1.
     """
     cik = -1
-    cik_regex = 'CENTRAL INDEX KEY:...(\d*)'
+    cik_regex = r'CENTRAL INDEX KEY:...(\d*)'
     r = re.compile(cik_regex)
     matches = r.findall(text)
     if matches:
