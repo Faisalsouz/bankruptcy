@@ -50,8 +50,13 @@ conda env update -f install.yml
 
 ## Dependencies
 This list shows all the necessary dependencies to run the Machine Learning Prediction script(s) with the respective version to use (please make sure your version matches :wink:, otherwise we might run into troubles later on):
-- pandas : 0.25.3
+- keras: 2.3.1
+- imblearn: 0.5.0
+- matplotlib: 3.1.1
 - numpy : 1.17.4
+- pandas : 0.25.3
+- sklearn: 0.21.3
+
 
 
 ## Running the Data Extraction script 
