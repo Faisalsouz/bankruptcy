@@ -55,6 +55,8 @@ This list shows all the necessary dependencies to run the Machine Learning Predi
 - matplotlib: 3.1.1
 - numpy : 1.17.4
 - pandas : 0.25.3
+- pymongo: 3.10.1
+- sacred: 0.8.1
 - sklearn: 0.21.3
 
 
