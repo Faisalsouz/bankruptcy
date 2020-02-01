@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
 
-def load_data(path_to_data, test_ratio):
+
+def load_data(path_to_data='../../data/NO_SHUFFLE.csv', test_ratio=0.2):
     """
     Loads the data.
 
     Args:
-        path_to_data (str): The path to the data csv-file.
-        test_ratio (float): Determines the ratio of the test set.
+        path_to_data (str): The path to the data csv-file. By default: NO_SHUFFLE.csv
+        test_ratio (float): Determines the ratio of the test set. By default: 0.2
 
     Returns:
         train_data (2d-array): The training data
@@ -50,3 +51,7 @@ def _shuffle_data(data):
     # join both dataframes
     shuffled_data = pd.concat([index_df, data.reindex(index_df.index)], axis=1)
     return shuffled_data
+
+
+if __name__ == "__main__":
+    print('Utility function script')
