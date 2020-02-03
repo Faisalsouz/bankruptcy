@@ -2,13 +2,14 @@ import pandas as pd
 import numpy as np
 
 
-def load_data(path_to_data='../../data/NO_SHUFFLE.csv', test_ratio=0.2):
+def load_data(path_to_data='../../data/NO_SHUFFLE.csv', test_ratio=0.2, val_ratio=0.1):
     """
     Loads the data.
 
     Args:
         path_to_data (str): The path to the data csv-file. By default: NO_SHUFFLE.csv
         test_ratio (float): Determines the ratio of the test set. By default: 0.2
+        val_ratio (float): Determines the ratio of the validation set. By default: 0.1
 
     Returns:
         train_data (2d-array): The training data
@@ -23,14 +24,20 @@ def load_data(path_to_data='../../data/NO_SHUFFLE.csv', test_ratio=0.2):
     # extract the labels from the dataframe and drop unnecessary columns
     all_labels = df_shuffled['Bankrupt'].to_numpy()
     all_data = df_shuffled.drop(columns=['Bankrupt', 'CIK', 'Year']).to_numpy()
-    # calculate the split point
-    split_point = int((len(all_data)//5) * test_ratio) * 5
+
+    # calculate the split points
+    test_split = int((len(all_data)//5) * test_ratio) * 5
+    val_split = int((len(all_data)//5) * val_ratio) * 5
+
     # do the split
-    test_data = all_data[:split_point,:]
-    train_data = all_data[split_point:,:]
-    test_labels = all_labels[:split_point]
-    train_labels = all_labels[split_point:]
-    return train_data, train_labels, test_data, test_labels
+    val_data = all_data[:val_split]
+    val_labels = all_labels[:val_split]
+    test_data = all_data[val_split:test_split+val_split]
+    test_labels = all_labels[val_split:test_split+val_split]
+    train_data = all_data[test_split+val_split:]
+    train_labels = all_labels[test_split+val_split:]
+
+    return train_data, train_labels, test_data, test_labels, val_data, val_labels
 
 
 def _shuffle_data(data):
@@ -54,4 +61,4 @@ def _shuffle_data(data):
 
 
 if __name__ == "__main__":
-    print('Utility function script')
+    load_data()

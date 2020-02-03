@@ -8,6 +8,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Conv1D, LSTM, Flatten, Dense
 from keras.callbacks import Callback
+from keras.optimizers import Adam, SGD
 from keras.metrics import Precision, AUC
 from keras.preprocessing.sequence import TimeseriesGenerator
 
@@ -29,21 +30,26 @@ def cfg():
     units = 16
     optimizer = 'adam'
     loss = 'binary_crossentropy'
-    activation = 'sigmoid'
+    activation_conv = 'linear'
+    activation_lstm = 'tanh'
     epochs = 10
     batch_size = 32
     test_ratio = 0.2
-    # TODO: remove from config?
+    learning_rate = 0.1
+    val_ratio = 0.1
+    class_ratio = (1.0, 2.0)
     input_shape = (5, 36)
 
 
 @ex.capture # if this method is called and some values are not filled, sacred tries to fill them
-def get_model(kernels, stride, units, optimizer, loss, activation, input_shape):
+def get_model(kernels, stride, units, optimizer, loss, activation_conv, activation_lstm, input_shape):
     model = Sequential()    
-    model.add(Conv1D(kernels, stride, input_shape=input_shape))
-    model.add(LSTM(units))
-    model.add(Dense(1, activation=activation))
-    model.compile(optimizer=optimizer,
+    model.add(Conv1D(kernels, stride, activation=activation_conv, input_shape=input_shape))
+    model.add(LSTM(units, activation=activation_lstm))
+    model.add(Dense(1, activation='softmax'))
+
+    opti = Adam(lr=learning_rate) if optimizer == 'adam' else SGD(lr=learning_rate)
+    model.compile(optimizer=opti,
                   loss=loss,
                   metrics=['accuracy', Precision(), AUC()])
 
@@ -65,27 +71,32 @@ class LogPerformance(Callback):
 
 
 @ex.automain  # Using automain to enable command line integration
-def run(epochs, input_shape, batch_size, test_ratio, _run):
+def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _run):
     # Load the data
-    train_data, train_labels, test_data, test_labels = load_data(test_ratio=test_ratio)
-
+    train_data, train_labels, test_data, test_labels, val_data, val_labels = load_data(test_ratio=test_ratio,
+                                                                                       val_ratio=val_ratio)
     prediction_horizon = input_shape[0]
 
     # create time series generators
     train_generator = TimeseriesGenerator(train_data, train_labels, length=prediction_horizon, batch_size=batch_size,
                                           stride=prediction_horizon+1)
     test_generator = TimeseriesGenerator(test_data, test_labels, length=prediction_horizon, stride=prediction_horizon+1)
+    val_generator = TimeseriesGenerator(val_data, val_labels, length=prediction_horizon, stride=prediction_horizon+1)
 
+    # Get the model
     model = get_model()
 
     # Train the model
     model.fit_generator(
-      train_generator,
-      epochs=epochs,
-      callbacks=[LogPerformance()]
-    ) 
+        train_generator,
+        validation_data=test_generator,
+        validation_freq=1,
+        class_weight={0: class_ratio[0], 1: class_ratio[1]},
+        epochs=epochs,
+        callbacks=[LogPerformance()]
+    )
 
-    return model.evaluate_generator(test_generator)[1]
+    # return model.evaluate_generator(test_generator)[1]
 
 
 
