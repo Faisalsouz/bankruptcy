@@ -22,7 +22,7 @@ def load_data(path_to_data='../../data/NO_SHUFFLE.csv', test_ratio=0.2, val_rati
     # shuffle the data
     df_shuffled = _shuffle_data(df_full_data)
     # extract the labels from the dataframe and drop unnecessary columns
-    labels = df_shuffled['Bankrupt'].to_numpy()
+    labels = df_shuffled['Bankrupt']
     data = df_shuffled.drop(columns=['Bankrupt', 'CIK', 'Year']).to_numpy()
     # prepare the data and label for the generator
     prepared_data, prepared_labels = _prepare_data_for_generator(data, labels)
