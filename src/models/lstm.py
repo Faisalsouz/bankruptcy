@@ -8,6 +8,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import LSTM, Flatten, Dense
 from keras.callbacks import Callback
+from keras.optimizers import Adam, SGD
 from keras.metrics import Precision, AUC
 from keras.preprocessing.sequence import TimeseriesGenerator
 
@@ -74,10 +75,9 @@ def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _ru
     prediction_horizon = input_shape[0]
 
     # create time series generators
-    train_generator = TimeseriesGenerator(train_data, train_labels, length=prediction_horizon, batch_size=batch_size,
-                                          stride=prediction_horizon+1)
-    test_generator = TimeseriesGenerator(test_data, test_labels, length=prediction_horizon, stride=prediction_horizon+1)
-    val_generator = TimeseriesGenerator(val_data, val_labels, length=prediction_horizon, stride=prediction_horizon+1)
+    train_generator = TimeseriesGenerator(train_data, train_labels, length=prediction_horizon, batch_size=batch_size, stride=prediction_horizon)
+    test_generator = TimeseriesGenerator(test_data, test_labels, length=prediction_horizon, stride=prediction_horizon)
+    val_generator = TimeseriesGenerator(val_data, val_labels, length=prediction_horizon, stride=prediction_horizon)
 
     # Get the model
     model = get_model()
