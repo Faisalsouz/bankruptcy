@@ -26,22 +26,22 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 @ex.config  # Configuration is defined through local variables
 def cfg():
-    neurons_first_layer = 16
-    neurons_second_layer = 16
-    neurons_third_layer = 16
+    neurons_first_layer = 128
+    neurons_second_layer = 64
+    neurons_third_layer = 32
     neurons_fourth_layer = 16
     optimizer = 'adam'
     loss = 'binary_crossentropy'
-    activation_first_layer = 'linear'
-    activation_second_layer = 'linear'
-    activation_third_layer = 'linear'
-    activation_fourth_layer = 'linear'
+    activation_first_layer = 'tanh'
+    activation_second_layer = 'tanh'
+    activation_third_layer = 'tanh'
+    activation_fourth_layer = 'tanh'
     epochs = 10
     batch_size = 32
-    learning_rate = 0.1
+    learning_rate = 0.001
     test_ratio = 0.2
     val_ratio = 0.1
-    class_ratio = (1.0, 2.0)
+    class_ratio = (1.0, 3.0)
     input_shape = (5, 36)
 
 
@@ -58,9 +58,7 @@ def get_model(neurons_first_layer, neurons_second_layer, neurons_third_layer, ne
     model.add(Dense(2, activation='softmax'))
 
     opti = Adam(lr=learning_rate) if optimizer == 'adam' else SGD(lr=learning_rate)
-    model.compile(optimizer=opti,
-                  loss=loss,
-                  metrics=['accuracy', Precision(), AUC()])
+    model.compile(optimizer=opti, loss=loss, metrics=['accuracy', Precision(), AUC()])
 
     return model
 
@@ -97,11 +95,36 @@ def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _ru
     # Train the model
     model.fit_generator(
         train_generator,
-        validation_data=test_generator,
+        validation_data=val_generator,
         validation_freq=1,
         class_weight={0: class_ratio[0], 1: class_ratio[1]},
         epochs=epochs,
         callbacks=[LogPerformance()]
     ) 
 
+    predictions = model.predict_generator(test_generator)
+    targets = test_generator.targets[5::5]
+    # transform to labels
+    prediction_labels = np.argmax(predictions, axis=1)
+    target_labels = np.argmax(targets, axis=1)
+    # calculate TP, TN, FP, FN
+    true_predictions = prediction_labels[target_labels == prediction_labels]
+    tp = len(true_predictions[true_predictions == 0])
+    tn = len(true_predictions[true_predictions == 1])
+    false_predictions = prediction_labels[target_labels != prediction_labels]
+    fn = len(false_predictions[false_predictions == 1])
+    fp = len(false_predictions[false_predictions == 0])
+    # print confusion matrix
+    print("""Confusion matrix of test results:
+                              Actual class
+                       non-bank | bankrupt
+Predicted | non-bank |    {}    |    {}
+class     | bankrupt |    {}    |    {}
+""".format(tp, fp, fn, tn))
+
+    # calculate weighted accuracy
+    total_bank = len(target_labels[target_labels == 1])
+    total_non_bank = len(target_labels[target_labels == 0])
+    weighted_acc = tp / (2 * total_non_bank) + tn / (2 * total_bank)
+    print(f"Weighted accuracy: {weighted_acc}")
     # return model.evaluate_generator(val_generator)[1]
