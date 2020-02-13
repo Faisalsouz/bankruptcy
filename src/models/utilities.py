@@ -75,7 +75,7 @@ def _prepare_data_for_generator(data, labels):
 
     Returns
         prepared_data = 2d-array of length n+1
-        prepared_label = 1d-array of length n+1
+        one_hot = one hot encoded labels
     """
     # prepare labels
     # replace first 4 labels by placeholder (-1)
@@ -85,6 +85,10 @@ def _prepare_data_for_generator(data, labels):
     prepared_labels = np.zeros(shape=(len(labels)+1), dtype=np.int64)
     prepared_labels[0] = -1
     prepared_labels[1:] = labels
+    # one hot encoding
+    one_hot = np.full((len(prepared_labels),2), np.nan, dtype=np.int64)
+    one_hot[prepared_labels == 1] = [0, 1]
+    one_hot[prepared_labels == 0] = [1, 0]
     
     # prepare data
     # just add another dummy data sample
@@ -92,7 +96,7 @@ def _prepare_data_for_generator(data, labels):
     prepared_data = np.zeros(shape=(r + 1, c))
     prepared_data[:-1] = data
 
-    return prepared_data, prepared_labels
+    return prepared_data, one_hot
 
 
 if __name__ == "__main__":
