@@ -13,7 +13,7 @@ from keras.optimizers import Adam, SGD
 from keras.preprocessing.sequence import TimeseriesGenerator
 
 # importing utility functions
-from utilities import load_data
+from utilities import load_data, evaluate_test_predictions
 
 
 # now let us set up the experiment
@@ -102,29 +102,15 @@ def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _ru
         callbacks=[LogPerformance()]
     ) 
 
+    # Evaluation
     predictions = model.predict_generator(test_generator)
     targets = test_generator.targets[5::5]
-    # transform to labels
-    prediction_labels = np.argmax(predictions, axis=1)
-    target_labels = np.argmax(targets, axis=1)
-    # calculate TP, TN, FP, FN
-    true_predictions = prediction_labels[target_labels == prediction_labels]
-    tp = len(true_predictions[true_predictions == 0])
-    tn = len(true_predictions[true_predictions == 1])
-    false_predictions = prediction_labels[target_labels != prediction_labels]
-    fn = len(false_predictions[false_predictions == 1])
-    fp = len(false_predictions[false_predictions == 0])
-    # print confusion matrix
-    print("""Confusion matrix of test results:
-                              Actual class
-                       non-bank | bankrupt
-Predicted | non-bank |    {}    |    {}
-class     | bankrupt |    {}    |    {}
-""".format(tp, fp, fn, tn))
+    tp, fp, tn, fn, weighted_acc= evaluate_test_predictions(targets, predictions)
+    # log test results
+    _run.log_scalar('test_tp', tp)
+    _run.log_scalar('test_fp', fp)
+    _run.log_scalar('test_tn', tn)
+    _run.log_scalar('test_fn', fn)
+    _run.log_scalar('test_weighted_acc', weighted_acc)
 
-    # calculate weighted accuracy
-    total_bank = len(target_labels[target_labels == 1])
-    total_non_bank = len(target_labels[target_labels == 0])
-    weighted_acc = tp / (2 * total_non_bank) + tn / (2 * total_bank)
-    print(f"Weighted accuracy: {weighted_acc}")
-    # return model.evaluate_generator(val_generator)[1]
+    return weighted_acc

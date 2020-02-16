@@ -99,5 +99,55 @@ def _prepare_data_for_generator(data, labels):
     return prepared_data, one_hot
 
 
+def evaluate_test_predictions(targets, predictions):
+    """
+    Evaluates the test predictions. Prints a confusion matrix and the weighted accuracy.
+
+    Args:
+        targets: The target labels from the generator.
+        predictions: The predicted output.
+
+    Returns:
+        A tupel with the TP, FP, TN, FN and the weighted accuracy.
+    """
+    # transform to labels
+    target_labels = np.argmax(targets, axis=1)
+    prediction_labels = np.argmax(predictions, axis=1)
+    # calculate confusion matrix
+    tp, fp, tn, fn = _calc_confusion_matrix(target_labels, prediction_labels)
+    print("""Confusion matrix of test results:
+                              Actual class
+                       non-bank | bankrupt
+Predicted | non-bank |    {}    |    {}
+class     | bankrupt |    {}    |    {}""".format(tp, fp, fn, tn))
+    # calculate weighted accuracy
+    total_bank = len(target_labels[target_labels == 1])
+    total_non_bank = len(target_labels[target_labels == 0])
+    weighted_acc = tp / (2 * total_non_bank) + tn / (2 * total_bank)
+    print(f"Weighted accuracy: {weighted_acc}")
+
+    return tp, fp, tn, fn, weighted_acc
+
+
+def _calc_confusion_matrix(target_labels, prediction_labels):
+    """
+    Calculates the confusion matrix.
+
+    Args:
+        target_lables: The target labels.
+        prediction_labels: The predicted labels.
+
+    Returns:
+        The number of TP, FP, TN, FN.
+    """
+    true_predictions = prediction_labels[target_labels == prediction_labels]
+    tp = len(true_predictions[true_predictions == 0])
+    tn = len(true_predictions[true_predictions == 1])
+    false_predictions = prediction_labels[target_labels != prediction_labels]
+    fn = len(false_predictions[false_predictions == 1])
+    fp = len(false_predictions[false_predictions == 0])
+    return tp, fp, tn, fn
+
+
 if __name__ == "__main__":
     load_data()
