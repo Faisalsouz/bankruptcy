@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import keras.backend as K
 
 
 def load_data(path_to_data='../../data/NO_SHUFFLE.csv', test_ratio=0.2, val_ratio=0.1):
@@ -117,13 +118,11 @@ def evaluate_test_predictions(targets, predictions):
     tp, fp, tn, fn = _calc_confusion_matrix(target_labels, prediction_labels)
     print("""Confusion matrix of test results:
                               Actual class
-                       non-bank | bankrupt
-Predicted | non-bank |    {}    |    {}
-class     | bankrupt |    {}    |    {}""".format(tp, fp, fn, tn))
+                       bankrupt | non-bank
+Predicted | bankrupt |    {}    |    {}
+class     | non-bank |    {}    |    {}""".format(tp, fp, fn, tn))
     # calculate weighted accuracy
-    total_bank = len(target_labels[target_labels == 1])
-    total_non_bank = len(target_labels[target_labels == 0])
-    weighted_acc = tp / (2 * total_non_bank) + tn / (2 * total_bank)
+    weighted_acc = tp / (2 * (tp + fn)) + tn / (2 * (tn + fp))
     print(f"Weighted accuracy: {weighted_acc}")
 
     return tp, fp, tn, fn, weighted_acc
@@ -141,12 +140,30 @@ def _calc_confusion_matrix(target_labels, prediction_labels):
         The number of TP, FP, TN, FN.
     """
     true_predictions = prediction_labels[target_labels == prediction_labels]
-    tp = len(true_predictions[true_predictions == 0])
-    tn = len(true_predictions[true_predictions == 1])
+    tp = len(true_predictions[true_predictions == 1])
+    tn = len(true_predictions[true_predictions == 0])
     false_predictions = prediction_labels[target_labels != prediction_labels]
-    fn = len(false_predictions[false_predictions == 1])
-    fp = len(false_predictions[false_predictions == 0])
+    fn = len(false_predictions[false_predictions == 0])
+    fp = len(false_predictions[false_predictions == 1])
     return tp, fp, tn, fn
+
+
+def custom_precision(y_true, y_pred):
+    label_true = K.argmax(y_true, -1)
+    label_pred = K.argmax(y_pred, -1)
+    correct_pred = K.equal(label_true, label_pred)
+    wrong_pred = K.not_equal(label_true, label_pred)
+    zero_pred = K.equal(label_pred, 0)
+    one_pred = K.equal(label_pred, 1)
+    tp_pred = K.all(K.stack([correct_pred, one_pred], axis=0), axis=0)
+    tn_pred = K.all(K.stack([correct_pred, zero_pred], axis=0), axis=0)
+    fp_pred = K.all(K.stack([wrong_pred, one_pred], axis=0), axis=0)
+    fn_pred = K.all(K.stack([wrong_pred, zero_pred], axis=0), axis=0)
+    tp = K.sum(K.cast_to_floatx(tp_pred))
+    tn = K.sum(K.cast_to_floatx(tn_pred))
+    fp = K.sum(K.cast_to_floatx(fp_pred))
+    fn = K.sum(K.cast_to_floatx(fn_pred))
+    return tp / (tp + fp)
 
 
 if __name__ == "__main__":

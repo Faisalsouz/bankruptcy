@@ -11,9 +11,10 @@ from keras.layers import Dense, Flatten
 from keras.callbacks import Callback
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.sequence import TimeseriesGenerator
+import keras.backend as K
 
 # importing utility functions
-from utilities import load_data, evaluate_test_predictions
+from utilities import load_data, evaluate_test_predictions, custom_precision
 
 
 # now let us set up the experiment
@@ -58,7 +59,7 @@ def get_model(neurons_first_layer, neurons_second_layer, neurons_third_layer, ne
     model.add(Dense(2, activation='softmax'))
 
     opti = Adam(lr=learning_rate) if optimizer == 'adam' else SGD(lr=learning_rate)
-    model.compile(optimizer=opti, loss=loss, metrics=['accuracy', Precision(), AUC()])
+    model.compile(optimizer=opti, loss=loss, metrics=['accuracy', Precision(), AUC(), custom_precision])
 
     return model
 
@@ -103,6 +104,8 @@ def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _ru
     ) 
 
     # Evaluation
+    scores = model.evaluate_generator(test_generator)
+    print(scores)
     predictions = model.predict_generator(test_generator)
     targets = test_generator.targets[5::5]
     tp, fp, tn, fn, weighted_acc= evaluate_test_predictions(targets, predictions)
