@@ -13,7 +13,7 @@ from keras.metrics import Precision, AUC
 from keras.preprocessing.sequence import TimeseriesGenerator
 
 # importing utility functions
-from utilities import load_data
+from utilities import *
 
 # now let us set up the experiment
 ex = Experiment('LSTM')
@@ -25,16 +25,16 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 @ex.config  # Configuration is defined through local variables.
 def cfg():
-    units = 16
+    units = 32
     optimizer = 'adam'
     loss = 'binary_crossentropy'
-    activation = 'linear'
-    epochs = 10
-    batch_size = 32
-    learning_rate = 0.1
+    activation = 'elu'
+    epochs = 3
+    batch_size = 16
+    learning_rate = 0.001
     test_ratio = 0.2
     val_ratio = 0.1
-    class_ratio = (1.0, 2.0)
+    class_ratio = (1.0, 5.0)
     input_shape = (5, 36)
 
 
@@ -43,12 +43,14 @@ def get_model(units, optimizer, loss, activation, learning_rate, input_shape):
     model = Sequential()    
     model.add(LSTM(units, input_shape=input_shape, activation=activation, return_sequences=True))
     model.add(Flatten())
-    model.add(Dense(1, activation='softmax'))
+    model.add(Dense(2, activation='softmax'))
 
-    opti = Adam(lr=learning_rate) if optimizer == 'adam' else SGD(lr=learning_rate)
+    opti = Adam(lr=learning_rate)
+    # opti = SGD(lr=learning_rate)
+    # print(opti)
     model.compile(optimizer=opti,
                   loss=loss,
-                  metrics=['accuracy', Precision(), AUC()])
+                  metrics=['accuracy', Precision(), AUC(), custom_precision])
 
     return model
 
@@ -59,6 +61,7 @@ def log_performance(_run, logs):
     _run.log_scalar("accuracy", float(logs.get('accuracy')))
     _run.log_scalar("precision", float(logs.get('precision_1')))
     _run.log_scalar("auc", float(logs.get('auc_1')))
+    _run.log_scalar("custom_precision", float(logs.get('custom_precision')))
 
 
 # class for logging on the end of an epoch
@@ -92,7 +95,15 @@ def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _ru
       callbacks=[LogPerformance()]
     )
 
-    # return model.evaluate_generator(val_generator)[1]
+    predictions = model.predict_generator(test_generator)
+    targets = test_generator.targets[5::5]
+
+    # calculate confusion matrix values and the weighted accuracy
+    tp, fp, tn, fn, weighted_acc = evaluate_test_predictions(targets, predictions)
+
+
+    return weighted_acc
+
 
 
 

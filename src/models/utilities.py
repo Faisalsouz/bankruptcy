@@ -52,6 +52,7 @@ def _shuffle_data(data):
     Returns:
         A group shuffled data frame.
     """
+    # np.random.seed(0)
     # create a shuffling index
     perm = np.random.permutation(len(data)//5) * 5
     idx = [j for sub in [[i, i+1, i+2, i+3, i+4] for i in perm] for j in sub]
@@ -116,6 +117,8 @@ def evaluate_test_predictions(targets, predictions):
     prediction_labels = np.argmax(predictions, axis=1)
     # calculate confusion matrix
     tp, fp, tn, fn = _calc_confusion_matrix(target_labels, prediction_labels)
+    print("\nBankrupt: {}, Non-Bankrupt: {}".format((fp+tn), (tp+fn)))
+   
     print("""Confusion matrix of test results:
                               Actual class
                        bankrupt | non-bank
