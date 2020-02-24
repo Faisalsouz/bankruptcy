@@ -13,7 +13,7 @@ from keras.metrics import Precision, AUC
 from keras.preprocessing.sequence import TimeseriesGenerator
 
 # importing utility functions
-from utilities import load_data
+from utilities import load_datahttps://github.com/shrnkm/bankruptcy/tree/master/src/examples
 
 # now let us set up the experiment
 ex = Experiment('Standard')
@@ -25,25 +25,33 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 @ex.config  # Configuration is defined through local variables.
 def cfg():
-    neurons_first_layer = 16
+    neurons_first_layer = 64
+    neurons_seconed_layer = 32
+    initialiser = 'lecun_uniform'
+    drop_rate = 0.4
     optimizer = 'adam'
+    bias = True
     loss = 'binary_crossentropy'
-    activation = 'linear'
-    epochs = 3
+    activation = 'selu'
+    activation_second_layer = 'selu'
+    epochs = 75
     batch_size = 32
-    learning_rate = 0.1
+    learning_rate = 0.0016
     test_ratio = 0.2
     val_ratio = 0.1
-    class_ratio = (1.0, 2.0)
+    class_ratio = (1.0, 3.6)
     input_shape = (5, 36)
 
 
 @ex.capture  # if this method is called and some values are not filled, sacred tries to fill them
-def get_model(neurons_first_layer, optimizer, loss, activation, learning_rate, input_shape):
+def get_model(neurons_first_layer,neurons_seconed_layer, initialiser, bias, optimizer, loss, activation,
+              activation_second_layer, learning_rate, input_shape,drop_rate):
     model = Sequential()
-    model.add(Dense(neurons_first_layer, activation=activation, input_shape=input_shape))
+    model.add(Dense(neurons_first_layer, activation=activation, kernel_initializer=initialiser, input_shape=input_shape, use_bias=bias))
+    model.add(Dropout(rate=drop_rate))
+    model.add(Dense(neurons_seconed_layer, activation=activation_second_layer, kernel_initializer= initialiser, use_bias=bias))
     model.add(Flatten())
-    model.add(Dense(1, activation='softmax'))
+    model.add(Dense(2, activation='softmax'))
 
     opti = Adam(lr=learning_rate) if optimizer == 'adam' else SGD(lr=learning_rate)
     model.compile(
@@ -62,13 +70,13 @@ def log_performance(_run, logs):
     _run.log_scalar("auc", float(logs.get('auc_1')))
 
 
-# class for logging on the end of an epoch
+# class for logging at the end of an epoch
 class LogPerformance(Callback):
-    def on_batch_end(self, _, logs=None):
+    def on_epoch_end(self, epoch, logs=None):
         log_performance(logs=logs)
 
 
-@ex.automain  # Using automain to enable command line integration.
+@ex.automain  # Using automain to enable command line integration
 def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _run):
     # Load the data
     train_data, train_labels, test_data, test_labels, val_data, val_labels = load_data(test_ratio=test_ratio,
@@ -84,35 +92,26 @@ def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _ru
     model = get_model()
 
     # Train the model
-    # validation_freq: validate against test generator every validation_freq epoch
-    # class_weight: fight imbalance by telling model to take care of under-represented classes
-    # e.g. this means model should treat class 1 as 50x more 'important' as class 0
-    # this effects the loss function and hence becomes weighted
     model.fit_generator(
         train_generator,
-        validation_data=test_generator,
+        validation_data=val_generator,
         validation_freq=1,
         class_weight={0: class_ratio[0], 1: class_ratio[1]},
         epochs=epochs,
         callbacks=[LogPerformance()]
     )
 
-    # make predictions (returns array)
-    predictions = model.predict_generator(val_generator).astype(int)
+    # Evaluation
+    scores = model.evaluate_generator(test_generator)
+    print(scores)
+    predictions = model.predict_generator(test_generator)
+    targets = test_generator.targets[5::5]
+    tp, fp, tn, fn, weighted_acc= evaluate_test_predictions(targets, predictions)
+    # log test results
+    _run.log_scalar('test_tp', tp)
+    _run.log_scalar('test_fp', fp)
+    _run.log_scalar('test_tn', tn)
+    _run.log_scalar('test_fn', fn)
+    _run.log_scalar('test_weighted_acc', weighted_acc)
 
-    print("\nExample predictions in the form of Ground-Truth => Prediction")
-    for i in range(10):
-        # TODO: maybe something like this (see TODO below for possible reason)?
-        # print('{} => {}'.format(val_generator.targets[i*5:i*5+5], predictions[i]))
-        print('{} => {}'.format(val_generator.targets[i], predictions[i]))
-
-    # TODO: unequal length, probably because of sequences of 5 yield one (the final) prediction
-    # len(targets) = 2890, len(predictions) = 481
-    # how to check for correctness?
-    # np.equal returns boolean array
-    e = np.equal(val_generator.targets, predictions)
-    # return percentage of correctness
-    # if everything was predicted correctly, this should return 1
-    # TODO: len(e) = 481, np.sum(e) > 28000. WHY??
-    return np.sum(e) / len(predictions)
-
+    return weighted_acc
