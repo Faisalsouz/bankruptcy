@@ -4,6 +4,8 @@ from sacred.observers import MongoObserver
 from sacred.utils import apply_backspaces_and_linefeeds
 
 # other imports
+import os
+import pickle
 import numpy as np
 from keras.models import Sequential
 from keras.layers import LSTM, Flatten, Dense
@@ -61,7 +63,6 @@ def log_performance(_run, logs):
     _run.log_scalar("accuracy", float(logs.get('accuracy')))
     _run.log_scalar("precision", float(logs.get('precision_1')))
     _run.log_scalar("auc", float(logs.get('auc_1')))
-    _run.log_scalar("custom_precision", float(logs.get('custom_precision')))
 
 
 # class for logging on the end of an epoch
@@ -72,9 +73,15 @@ class LogPerformance(Callback):
 
 @ex.automain  # Using automain to enable command line integration.
 def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _run):
+
     # Load the data
-    train_data, train_labels, test_data, test_labels, val_data, val_labels = load_data(test_ratio=test_ratio,
-                                                                                       val_ratio=val_ratio)
+    data_path = os.getcwd() + '/../../data/Data{}_{}.pickle'.format(int(test_ratio*100), int(val_ratio*100))
+
+    if not os.path.isfile(data_path):
+        print('Loading data.. ')                                                                       
+        load_data(test_ratio=test_ratio, val_ratio=val_ratio)     
+    train_data, train_labels, test_data, test_labels, val_data, val_labels = pickle.load(open(data_path, 'rb'))   
+    
     prediction_horizon = input_shape[0]
 
     # create time series generators

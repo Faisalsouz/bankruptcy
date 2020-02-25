@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle, os
 import keras.backend as K
 
 
@@ -39,7 +40,11 @@ def load_data(path_to_data='../../data/NO_SHUFFLE.csv', test_ratio=0.2, val_rati
     train_data = prepared_data[test_split+val_split:]
     train_labels = prepared_labels[test_split+val_split:]
 
-    return train_data, train_labels, test_data, test_labels, val_data, val_labels
+    data_dir = os.getcwd() + '/' + os.path.dirname(path_to_data)
+    file_name = data_dir + '/Data{}_{}.pickle'.format(int(test_ratio*100), int(val_ratio*100))
+
+    # this will override existing pickle files
+    pickle.dump([train_data, train_labels, test_data, test_labels, val_data, val_labels], open(file_name, 'wb'))
 
 
 def _shuffle_data(data):
