@@ -57,7 +57,6 @@ def _shuffle_data(data):
     Returns:
         A group shuffled data frame.
     """
-    # np.random.seed(0)
     # create a shuffling index
     perm = np.random.permutation(len(data)//5) * 5
     idx = [j for sub in [[i, i+1, i+2, i+3, i+4] for i in perm] for j in sub]

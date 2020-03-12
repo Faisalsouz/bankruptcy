@@ -10,13 +10,14 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import LSTM, Flatten, Dense
 from keras.callbacks import Callback
-from keras.optimizers import Adam, SGD
+from keras.optimizers import Adam, SGD, Adagrad, Adadelta, RMSprop, Nadam, Adamax
 from keras.metrics import Precision, AUC
 from keras.preprocessing.sequence import TimeseriesGenerator
 
 # importing utility functions
 from utilities import *
 
+np.random.seed(0)
 # now let us set up the experiment
 ex = Experiment('LSTM')
 # and add the observe to the experiment -> this will store the data in the cloud
@@ -27,32 +28,53 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 @ex.config  # Configuration is defined through local variables.
 def cfg():
-    units = 32
-    optimizer = 'adam'
-    loss = 'binary_crossentropy'
-    activation = 'elu'
-    epochs = 3
-    batch_size = 16
-    learning_rate = 0.001
+    units = 256
+    optimizer = 'nadam'
+    loss = 'binary_crossentropy'  # mean_squared_error
+    activation = 'tanh'
+    recurrent_activation = 'tanh'  # sigmoid
+    kernel_initializer = 'lecun_uniform' # glorot_uniform
+    recurrent_initializer = 'orthogonal' # orthogonal
+    # dropout = 0.05
+    epochs = 200
+    batch_size = 64
+    learning_rate = 0.0001
     test_ratio = 0.2
     val_ratio = 0.1
-    class_ratio = (1.0, 5.0)
+    class_ratio = (1.0, 3.5)
     input_shape = (5, 36)
 
 
 @ex.capture  # if this method is called and some values are not filled, sacred tries to fill them
-def get_model(units, optimizer, loss, activation, learning_rate, input_shape):
+def get_model(units, optimizer, loss, activation, learning_rate, input_shape, kernel_initializer, recurrent_initializer, recurrent_activation):
     model = Sequential()    
-    model.add(LSTM(units, input_shape=input_shape, activation=activation, return_sequences=True))
+    model.add(LSTM(units, 
+        input_shape=input_shape, 
+        activation=activation, recurrent_activation=recurrent_activation, 
+        kernel_initializer=kernel_initializer, recurrent_initializer = recurrent_initializer,
+        # dropout=dropout,
+        return_sequences=True))
     model.add(Flatten())
     model.add(Dense(2, activation='softmax'))
 
-    opti = Adam(lr=learning_rate)
-    # opti = SGD(lr=learning_rate)
-    # print(opti)
+    if optimizer == 'sgd' or optimizer == 'SGD':
+        opti = SGD(lr=learning_rate)
+    elif optimizer == 'rmsprop' or optimizer == 'RMSprop':
+        opti = RMSprop(lr=learning_rate)
+    elif optimizer == 'adam' or optimizer == 'Adam':
+        opti = Adam(lr=learning_rate)
+    elif optimizer == 'adagrad' or optimizer == 'Adagrad':
+        opti = Adagrad(lr=learning_rate)
+    elif optimizer == 'adadelta' or optimizer == 'Adadelta':
+        opti = Adadelta(lr=learning_rate)
+    elif optimizer == 'nadam' or optimizer == 'Nadam':
+        opti = Nadam(lr=learning_rate, beta_1=0.9, beta_2=0.999)  # beta_1=0.9, beta_2=0.999
+    elif optimizer == 'adamax' or optimizer == 'Adamax':
+        opti = Adamax(lr=learning_rate, beta_1=0.9, beta_2=0.999)  # beta_1=0.9, beta_2=0.999
+
     model.compile(optimizer=opti,
                   loss=loss,
-                  metrics=['accuracy', Precision(), AUC(), custom_precision])
+                  metrics=['accuracy', AUC(), custom_precision])
 
     return model
 
@@ -67,7 +89,7 @@ def log_performance(_run, logs):
 
 # class for logging on the end of an epoch
 class LogPerformance(Callback):
-    def on_batch_end(self, _, logs=None):
+    def on_epoch_end(self, epoch, logs=None):
         log_performance(logs=logs)
 
 
@@ -99,7 +121,8 @@ def run(epochs, input_shape, batch_size, test_ratio, val_ratio, class_ratio, _ru
       validation_freq=1,
       class_weight={0: class_ratio[0], 1: class_ratio[1]},
       epochs=epochs,
-      callbacks=[LogPerformance()]
+      callbacks=[LogPerformance()],
+      verbose = 2
     )
 
     predictions = model.predict_generator(test_generator)
